@@ -1,0 +1,59 @@
+{
+  "name": "sfa_project",
+  "version": "1.0.0",
+  "description": "new dynamic extensibly usable sfa project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "cross-env NODE_ENV=development nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Anup-Mishra/sfa-software.git"
+  },
+  "keywords": [
+    "node",
+    "npm",
+    "express",
+    "software"
+  ],
+  "author": "Anup Mishra",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Anup-Mishra/sfa-software/issues"
+  },
+  "homepage": "https://github.com/Anup-Mishra/sfa-software#readme",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "bluebird": "^3.7.2",
+    "body-parser": "^1.19.0",
+    "boom": "^7.3.0",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-validation": "^3.0.8",
+    "express-winston": "^4.1.0",
+    "firebase-admin": "^9.6.0",
+    "googleapis": "^68.0.0",
+    "helmet": "^4.4.1",
+    "http-status": "^1.5.0",
+    "joi": "^17.4.0",
+    "jsonwebtoken": "^8.5.1",
+    "method-override": "^3.0.0",
+    "mongodb": "^3.6.3",
+    "mongoose": "^5.11.15",
+    "mongoose-beautiful-unique-validation": "^7.1.1",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.2",
+    "nodemailer": "^6.5.0",
+    "passport": "^0.4.1",
+    "update": "^0.7.4",
+    "winston": "^3.3.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  }
+}
