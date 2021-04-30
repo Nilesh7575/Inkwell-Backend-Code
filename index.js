@@ -26,6 +26,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 app.use(compress());
+mongoose.set('useCreateIndex', true);
 app.use(methodOverride());
 app.use(cors());
 app.use(helmet());
