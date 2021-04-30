@@ -14,7 +14,7 @@ const expressWinston = require('express-winston');
 const expressValidation = require('express-validation');
 const helmet = require('helmet');
 const boom = require('boom');
-require('dotenv').config();
+// require('dotenv').config();
 const UserGroupMaster = require('./api/auth/UserGroupMaster.model');
 const ProductMaster = require('./api/Product/ProductMaster.model');
 const authRoutes = require('./api/auth/auth.route');
