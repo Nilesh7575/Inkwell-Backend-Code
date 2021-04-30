@@ -14,7 +14,7 @@ const expressWinston = require('express-winston');
 const expressValidation = require('express-validation');
 const helmet = require('helmet');
 const boom = require('boom');
-// require('dotenv').config();
+require('dotenv').config();
 const UserGroupMaster = require('./api/auth/UserGroupMaster.model');
 const ProductMaster = require('./api/Product/ProductMaster.model');
 const authRoutes = require('./api/auth/auth.route');
@@ -103,6 +103,7 @@ if(process.env.NODE_ENV === 'development'){
     mongoose.connect(process.env.MONGO_HOST+process.env.MONGODB,
         { useNewUrlParser: true, useUnifiedTopology: true })
     .then(result => {
+        console.log(process.env.PORT);
         app.listen(process.env.PORT,() => console.log(`Server started on port ${process.env.PORT} ${process.env.NODE_ENV}`));
     }).catch(err => {
         console.log(err);
