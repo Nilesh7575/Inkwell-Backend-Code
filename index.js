@@ -20,7 +20,7 @@ const ProductMaster = require('./api/Product/ProductMaster.model');
 const authRoutes = require('./api/auth/auth.route');
 const menuRoutes = require('./api/Menus/Menu.route');
 const app = express();
-
+const Port = process.env.PORT || 8087;
 app.use(passport.initialize());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
@@ -103,8 +103,8 @@ if(process.env.NODE_ENV === 'development'){
     mongoose.connect(process.env.MONGO_HOST+process.env.MONGODB,
         { useNewUrlParser: true, useUnifiedTopology: true })
     .then(result => {
-        console.log(process.env.PORT);
-        app.listen(process.env.PORT,() => console.log(`Server started on port ${process.env.PORT} ${process.env.NODE_ENV}`));
+        console.log(Port);
+        app.listen(Port,() => console.log(`Server started on port ${Port} ${process.env.NODE_ENV}`));
     }).catch(err => {
         console.log(err);
         throw new Error(`Unable to connect to database ${process.env.MONGODB}`);
