@@ -57,19 +57,29 @@ exports.signupFirm = (req, res, next) => {
         });
     })
     .then((result) => {
-      return email.sendEmail({
-        to: req.body.email,
-        from: process.env.GMAIL_EMAIL_ID,
-        subject: "Account created successfully",
-        html: `<div style='box-sizing: border-box'><h4 style='text-align: center;'>Account Created</h4><img src=""  style='justify-content: center;height:50px;width:50px' alt="app icon" /><p>Your account has been created successfully as <b>Firm Administrator</b>.</p><p><b>Username:</b>${req.body.userLoginId}</p></div>`,
-      });
-    })
-    .then((_) => {
-      res.status(201).send({
-        data: result,
-        message:
-          "Firm Administrator created successfully.Please create a Firm.",
-      });
+      email
+        .sendEmail({
+          to: req.body.email,
+          from: process.env.GMAIL_EMAIL_ID,
+          subject: "Account created successfully",
+          html: `<div style='box-sizing: border-box'><h4 style='text-align: center;'>Account Created</h4><img src=""  style='justify-content: center;height:50px;width:50px' alt="app icon" /><p>Your account has been created successfully as <b>Firm Administrator</b>.</p><p><b>Username:</b>${req.body.userLoginId}</p></div>`,
+        })
+        .then((_) => {
+          res.status(201).send({
+            data: result,
+            message:
+              "Firm Administrator created successfully.Please create a Firm.",
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+          res
+            .status(200)
+            .send({
+              data: err,
+              message: "User created successfully but unable to send email",
+            });
+        });
     })
     .catch((err) => {
       next(err);
@@ -106,19 +116,28 @@ exports.signupUser = (req, res, next) => {
         });
     })
     .then((result) => {
-      return email.sendEmail({
-        to: req.body.email,
-        from: process.env.GMAIL_EMAIL_ID,
-        subject: "Account created successfully",
-        html: `<div style='box-sizing: border-box'><h4 style='text-align: center;'>Account Created</h4><img src=""  style='justify-content: center;height:50px;width:50px' alt="app icon" /><p>Your account has been created successfully as <b>Salesman</b> and you are associated to these <p><b>Firm Email: ${req.body.firmEmail}</b></p>.</p><p><b>Username:</b>${req.body.userLoginId}</p></div>`,
-      });
-    })
-    .then((_) => {
-      res
-        .status(201)
-        .send({ data: result, message: "User created successfully" });
+      email
+        .sendEmail({
+          to: req.body.email,
+          from: process.env.GMAIL_EMAIL_ID,
+          subject: "Account created successfully",
+          html: `<div style='box-sizing: border-box'><h4 style='text-align: center;'>Account Created</h4><img src=""  style='justify-content: center;height:50px;width:50px' alt="app icon" /><p>Your account has been created successfully as <b>Salesman</b> and you are associated to these <p><b>Firm Email: ${req.body.firmEmail}</b></p>.</p><p><b>Username:</b>${req.body.userLoginId}</p></div>`,
+        })
+        .then((_) => {
+          res
+            .status(201)
+            .send({ data: result, message: "User created successfully" });
+        })
+        .catch((err) => {
+          console.log(err);
+          res.status(200).send({
+            data: err,
+            message: "User created successfully but unable to send email",
+          });
+        });
     })
     .catch((err) => {
+      console.log(err);
       next(err);
     });
 };
@@ -200,23 +219,32 @@ exports.forgotPassword = (req, res, next) => {
         });
         const url = `http://localhost:8087/api/getResetPassword/${token}`;
         console.log(token);
-        return email.sendEmail({
-          to: req.body.email,
-          from: process.env.GMAIL_EMAIL_ID,
-          subject: "Verify for resetting password",
-          html: `<div style='box-sizing: border-box'><h4 style='text-align: center;'>Verify for Resetting Password</h4><img src=""  style='justify-content: center;height:50px;width:50px' alt="app icon" /><a href=${url}></a></div>`,
-        });
+        email
+          .sendEmail({
+            to: req.body.email,
+            from: process.env.GMAIL_EMAIL_ID,
+            subject: "Verify for resetting password",
+            html: `<div style='box-sizing: border-box'><h4 style='text-align: center;'>Verify for Resetting Password</h4><img src=""  style='justify-content: center;height:50px;width:50px' alt="app icon" /><a href=${url}></a></div>`,
+          })
+          .then((result) => {
+            console.log(result);
+            res.status(200).send({
+              data: result,
+              message: "Email send for changing password",
+            });
+          })
+          .catch((err) => {
+            console.log(err);
+            res.status(400).send({
+              data: err,
+              message: "Unable to send email for changing password",
+            });
+          });
       } else {
         res
           .status(404)
           .send({ data: null, message: "No user exist with these email" });
       }
-    })
-    .then((result) => {
-      console.log(result);
-      res
-        .status(200)
-        .send({ data: result, message: "Email send for changing password" });
     })
     .catch((err) => {
       console.log("error logged", err);

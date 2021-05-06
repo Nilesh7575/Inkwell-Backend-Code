@@ -44,9 +44,6 @@ const userMasterSchema = new mongoose.Schema(
         ref: "FirmMaster",
       },
     ],
-    fcm_token: {
-      type: String,
-    },
   },
   {
     timestamps: true,
