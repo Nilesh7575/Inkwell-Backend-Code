@@ -26,11 +26,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(compress());
-<<<<<<< HEAD
 mongoose.set("useCreateIndex", true);
-=======
-mongoose.set('useCreateIndex', true);
->>>>>>> 746285f8c2d32aa39f81562964f91fa70196208f
 app.use(methodOverride());
 app.use(cors());
 app.use(helmet());
@@ -121,7 +117,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-<<<<<<< HEAD
 if (process.env.NODE_ENV === "development") {
   mongoose
     .connect(process.env.MONGO_HOST + process.env.MONGODB, {
@@ -134,17 +129,6 @@ if (process.env.NODE_ENV === "development") {
           `Server started on port ${process.env.PORT} ${process.env.NODE_ENV}`
         )
       );
-=======
-if(process.env.NODE_ENV === 'development'){
-    mongoose.connect(process.env.MONGO_HOST+process.env.MONGODB,
-        { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(result => {
-        console.log(Port);
-        app.listen(Port,() => console.log(`Server started on port ${Port} ${process.env.NODE_ENV}`));
-    }).catch(err => {
-        console.log(err);
-        throw new Error(`Unable to connect to database ${process.env.MONGODB}`);
->>>>>>> 746285f8c2d32aa39f81562964f91fa70196208f
     })
     .catch((err) => {
       console.log(err);
@@ -162,13 +146,10 @@ if (process.env.NODE_ENV === "test") {
         )
       );
     })
-<<<<<<< HEAD
     .catch((err) => {
       console.log(err);
       throw new Error(
         `Unable to connect to database ${process.env.MONGOTESTDB}`
       );
     });
-=======
->>>>>>> 746285f8c2d32aa39f81562964f91fa70196208f
 }
