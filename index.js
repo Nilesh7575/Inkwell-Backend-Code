@@ -69,6 +69,7 @@ if (process.env.NODE_ENV === "development") {
 app.use(express.static("files"));
 app.use("/menu", menuRoutes);
 app.use("/api", authRoutes);
+app.route("/").get((req, res) => res.json("hello world"));
 // app.post('/',(req,res) => {
 //     ProductMaster.create(req.body)
 //     .then(result => {
