@@ -5,11 +5,11 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "nodemon index.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Anup-Mishra/sfa-software.git"
+    "url": "git+https://github.com/somesh333/Inkwell-Backend-Code.git"
   },
   "keywords": [
     "node",
@@ -20,9 +20,9 @@
   "author": "Anup Mishra",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Anup-Mishra/sfa-software/issues"
+    "url": "https://github.com/somesh333/Inkwell-Backend-Code.git/issues"
   },
-  "homepage": "https://github.com/Anup-Mishra/sfa-software#readme",
+  "homepage": "https://github.com/somesh333/Inkwell-Backend-Code.gite#readme",
   "dependencies": {
     "bcrypt": "^5.0.1",
     "bluebird": "^3.7.2",
