@@ -1,8 +1,8 @@
 const FirmMaster = require("./FirmMaster.model");
-const ProductMaster = require("../Product/ProductMaster.model");
+const ProductMaster = require("../../models/ProductMaster.model");
 const mongoose = require("mongoose");
 const router = require("./Firm.route");
-const UserMaster = require("../auth/UserMaster.model");
+const UserMaster = require("../../models/UserMaster.model");
 
 exports.createFirm = (req, res, next) => {
   if (req.body.productName && req.body.productName.length > 0) {

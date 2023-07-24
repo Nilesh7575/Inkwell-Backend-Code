@@ -1,10 +1,10 @@
 const jwt = require("jsonwebtoken");
-const UserGroupMaster = require("./UserGroupMaster.model");
-const UserMaster = require("./UserMaster.model");
+const UserGroupMaster = require("../../models/UserGroupMaster.model");
+const UserMaster = require("../../models/UserMaster.model");
 const bcrypt = require("bcrypt");
 // const httpStatus = require('httpStatus');
-const FirmMaster = require("../Firm/FirmMaster.model");
-const email = require("../email/email.controller");
+const FirmMaster = require("../../api/Firm/FirmMaster.model");
+const email = require("../../controllers/email.controller");
 const db = require("../../config/database");
 
 exports.getUserGroup = (req, res, next) => {

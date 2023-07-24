@@ -1,14 +1,14 @@
-const MenuMaster = require("./MenuMaster.model");
-const ProductMaster = require("../Product/ProductMaster.model");
+const MenuMaster = require("../api/Menus/MenuMaster.model");
+const ProductMaster = require("../models/ProductMaster.model");
 const jwt = require("jsonwebtoken");
-const db = require("../../config/database");
-const UserGroupRoles = require("../auth/UserGroupRoles.model");
+const db = require("../config/database");
+const UserGroupRoles = require("../models/UserGroupRoles.model");
 const {
   uploadSingle,
   uploadArray,
-} = require("../../fileUpload/fileUpload.controller");
-const UserGroupMaster = require("../auth/UserGroupMaster.model");
-const FirmMaster = require("../Firm/FirmMaster.model");
+} = require("../fileUpload/fileUpload.controller");
+const UserGroupMaster = require("../models/UserGroupMaster.model");
+const FirmMaster = require("../api/Firm/FirmMaster.model");
 const mongoose = require("mongoose");
 
 exports.createNewMenu = (req, res, next) => {

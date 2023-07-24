@@ -1,6 +1,6 @@
-const Notification = require("./Notification.model");
+const Notification = require("../api/Notifications/Notification.model");
 const admin = require("firebase-admin");
-const DeviceMaster = require("../DeviceMaster.model");
+const DeviceMaster = require("../api/DeviceMaster.model");
 const Promise = require("bluebird");
 
 fcm.initializeApp({

@@ -1,12 +1,12 @@
-const ProductMaster = require("./ProductMaster.model");
+const ProductMaster = require("../models/ProductMaster.model");
 const {
   uploadSingle,
   uploadArray,
-} = require("../../fileUpload/fileUpload.controller");
+} = require("../fileUpload/fileUpload.controller");
 const mongoose = require("mongoose");
-const MenuMaster = require("../Menus/MenuMaster.model");
-const FirmMaster = require("../Firm/FirmMaster.model");
-const UserGroupRoles = require("../auth/UserGroupRoles.model");
+const MenuMaster = require("../api/Menus/MenuMaster.model");
+const FirmMaster = require("../api/Firm/FirmMaster.model");
+const UserGroupRoles = require("../models/UserGroupRoles.model");
 const fs = require("fs");
 const Promise = require("bluebird");
 

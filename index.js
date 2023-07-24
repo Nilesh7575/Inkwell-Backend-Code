@@ -15,10 +15,10 @@ const expressValidation = require("express-validation");
 const helmet = require("helmet");
 const boom = require("boom");
 require("dotenv").config();
-const UserGroupMaster = require("./api/auth/UserGroupMaster.model");
-const ProductMaster = require("./api/Product/ProductMaster.model");
-const authRoutes = require("./api/auth/auth.route");
-const menuRoutes = require("./api/Menus/Menu.route");
+const UserGroupMaster = require("./models/UserGroupMaster.model");
+// const ProductMaster = require("./models/ProductMaster.model");
+const authRoutes = require("./routes/auth.route");
+const menuRoutes = require("./routes/Menu.route");
 const app = express();
 const Port = process.env.PORT || 8087;
 app.use(passport.initialize());
@@ -127,7 +127,7 @@ if (process.env.NODE_ENV === "development") {
     .then((result) => {
       app.listen(process.env.PORT, () =>
         console.log(
-          `Server started on port ${process.env.PORT} ${process.env.NODE_ENV}`
+          `Development Server started on port ${process.env.PORT} ${process.env.NODE_ENV}`
         )
       );
     })
@@ -143,7 +143,7 @@ if (process.env.NODE_ENV === "test") {
     .then((result) => {
       app.listen(process.env.MONGO_TEST_PORT, () =>
         console.log(
-          `Server started on port ${process.env.MONGO_TEST_PORT} ${process.env.NODE_ENV}`
+          `Test Server started on port ${process.env.MONGO_TEST_PORT} ${process.env.NODE_ENV}`
         )
       );
     })
@@ -153,4 +153,5 @@ if (process.env.NODE_ENV === "test") {
         `Unable to connect to database ${process.env.MONGOTESTDB}`
       );
     });
-}
+  }
+ 
