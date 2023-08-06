@@ -1,24 +1,84 @@
-const Joi = require('joi');
+const { body } = require("express-validator");
+const brandModel = require("../models/brandModel");
+const categoryModel = require("../models/categoryModel");
+const productTypeModel = require("../models/productTypeModel");
+const productModel = require("../models/productModel");
 
-const productSchemaValidation = Joi.object({
-    productName: Joi.string().trim().required(),
-    _MFRName: Joi.string().trim().required(),
-    productType: Joi.string().trim().required(),
-    category: Joi.string().trim().required(),
-    brandId: Joi.string().trim().required(),
-    description: Joi.string().required(),
-    // image: Joi.array().items(Joi.string().trim().pattern(/^https?:\/\//)).required(),
-    variants: Joi.array().items({
-        quantity: Joi.number().positive().required(),
-        weight: Joi.number().positive(),
-        capacity: Joi.number().positive(),
-        packingSize: Joi.number().positive(),
-        _MRP: Joi.number().positive().required(),
-        salesPrice: Joi.number().positive().required(),
-    }).required(),
-});
+const productValidation = [
+    body("productName")
+        .isString()
+        .withMessage("productName must be a string")
+        .trim()
+        .notEmpty()
+        .withMessage("productName cannot be empty")
+        .custom(async (value) => {
+            const productName = await productModel.findOne({ productName: value });
+            if (productName) {
+                throw new Error("Product Name already exists");
+            }
+            return true;
+        }),
+    body("manufacturerName")
+        .isString()
+        .withMessage("manufacturerName must be a string")
+        .trim()
+        .notEmpty()
+        .withMessage("manufacturerName cannot be empty"),
+    body("productType")
+        .isMongoId()
+        .withMessage("Invalid productType")
+        .custom(async (value) => {
+            const productType = await productTypeModel.findById(value);
+            if (!productType) {
+                throw new Error("ProductType not found");
+            }
+            return true;
+        }),
+    body("category")
+        .isMongoId()
+        .withMessage("Invalid category")
+        .custom(async (value) => {
+            const category = await categoryModel.findById(value);
+            if (!category) {
+                throw new Error("Category not found");
+            }
+            return true;
+        }),
+    body("brandId")
+        .isMongoId()
+        .withMessage("Invalid brandId")
+        .custom(async (value) => {
+            const brand = await brandModel.findById(value);
+            if (!brand) {
+                throw new Error("Brand not found");
+            }
+            return true;
+        }),
+    body("description")
+        .isString()
+        .withMessage("Description must be a string")
+        .trim()
+        .notEmpty()
+        .withMessage("Description cannot be empty"),
+    body("variants.*.quantity")
+        .isInt()
+        .withMessage("Quantity must be an integer")
+        .notEmpty()
+        .withMessage("Quantity cannot be empty"),
+    body("variants.*.MRP")
+        .isNumeric()
+        .withMessage("MRP must be a number")
+        .notEmpty()
+        .withMessage("MRP cannot be empty"),
+    body("variants.*.salesPrice")
+        .isNumeric()
+        .withMessage("Sales price must be a number")
+        .notEmpty()
+        .withMessage("Sales price cannot be empty"),
+];
+
 const isValidImage = function (value) {
-    return (/\.(jpe?g|png|jpg)$/).test(value);
-}
+    return /\.(jpe?g|png|jpg)$/.test(value);
+};
 
-module.exports = { productSchemaValidation, isValidImage }
+module.exports = { productValidation, isValidImage };

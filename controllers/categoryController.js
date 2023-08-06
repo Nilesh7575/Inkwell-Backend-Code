@@ -1,9 +1,20 @@
 const categoryModel = require("../models/categoryModel");
+const {
+  categoryValidation,
+} = require("../validations/brand_category_productType_validation");
+const { validationResult } = require("express-validator");
 
 // Create a new category
 exports.createCategory = async (req, res) => {
   try {
     const { categoryName, description } = req.body;
+
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+      return res
+        .status(400)
+        .json({ success: false, message: error.errors[0].msg });
+    }
 
     const categoryNameFind = await categoryModel.findOne({
       categoryName: categoryName,
@@ -11,7 +22,7 @@ exports.createCategory = async (req, res) => {
     if (categoryNameFind) {
       return res
         .status(400)
-        .send({ message: "This Category Name Already Exist!" });
+        .send({ message: "This Category Name Already Exist" });
     }
     const newCategory = new categoryModel(req.body);
     const savedCategory = await newCategory.save();

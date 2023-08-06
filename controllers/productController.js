@@ -1,31 +1,38 @@
-const Product = require('../models/productModel');
-const { body, validationResult } = require('express-validator');
-const { uploadImageFile } = require('../helper/aws')
-const { productSchemaValidation, isValidImage } = require('../validations/productValidation')
+const { validationResult } = require("express-validator");
+const productModel = require("../models/productModel");
+const { uploadImageFile } = require("../helper/aws");
+const { isValidImage } = require("../validations/productValidation");
 
-// Create a new product
 exports.createProduct = async (req, res) => {
     try {
-        const { error, value } = productSchemaValidation.validate(req.body);
-        console.log(error)
-        if (error) {
-            const errorMessage = error.details.map(detail => detail.message).join(', ');
-            return res.status(400).json({ status: false, message: errorMessage });
+        const { productName } = req.body;
+        let files = req.files;
+
+        const error = validationResult(req);
+        if (!error.isEmpty()) {
+            return res
+                .status(400)
+                .json({ success: false, message: error.errors[0].msg });
         }
 
-        let files = req.files;
-        let fileExtension = files[0]
+        if (files.length > 0) {
+            let fileExtension = files[0];
+            if (!isValidImage(fileExtension.originalname))
+                return res.status(400).send({
+                    status: false,
+                    message: "Image format Must be in jpeg,jpg,png",
+                });
 
-        if (!isValidImage(fileExtension.originalname))
-            return res.status(400)
-                .send({ status: false, message: "Image format Must be in jpeg,jpg,png" })
-
-        let productImgUrl = await uploadImageFile(files[0]);
-
-        req.body.image = productImgUrl
-        const newProduct = new Product(req.body);
-        const savedProduct = await newProduct.save()
-        const populatedProduct = await Product.findById(savedProduct._id).populate('productType').populate('category').populate('brandId')
+            let ImageUrl = await uploadImageFile(files[0]);
+            req.body.image = ImageUrl;
+        }
+        const newProduct = new productModel(req.body);
+        const savedProduct = await newProduct.save();
+        const populatedProduct = await productModel
+            .findById(savedProduct._id)
+            .populate("productType")
+            .populate("category")
+            .populate("brandId");
 
         return res.status(201).send({ data: populatedProduct });
     } catch (err) {
@@ -36,52 +43,62 @@ exports.createProduct = async (req, res) => {
 // Get all products
 exports.getAllProducts = async (req, res) => {
     try {
-        const products = await Product.find();
-        res.json(products);
+        const products = await productModel
+            .find()
+            .populate("productType")
+            .populate("category")
+            .populate("brandId");
+
+        return res.json(products);
     } catch (err) {
-        res.status(500).json({ error: 'Failed to get products' });
+        res.status(500).json({ error: "Failed to get products" });
     }
 };
 
 // Get a single product by ID
 exports.getProductById = async (req, res) => {
     try {
-        const product = await Product.findById(req.params.id);
+        const product = await productModel
+            .findById(req.params.id)
+            .populate("productType")
+            .populate("category")
+            .populate("brandId");
+
         if (!product) {
-            return res.status(404).json({ error: 'Product not found' });
+            return res.status(404).json({ error: "Product not found" });
         }
         res.json(product);
     } catch (err) {
-        res.status(500).json({ error: 'Failed to get the product' });
+        res.status(500).json({ error: "Failed to get the product" });
     }
 };
 
 // Update a product by ID
 exports.updateProductById = async (req, res) => {
     try {
-        const updatedProduct = await Product.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true }
-        );
+        const updatedProduct = await productModel
+            .findByIdAndUpdate(req.params.id, req.body, { new: true })
+            .populate("productType")
+            .populate("category")
+            .populate("brandId");
         if (!updatedProduct) {
-            return res.status(404).json({ error: 'Product not found' });
+            return res.status(404).json({ error: "Product not found" });
         }
         res.json(updatedProduct);
     } catch (err) {
-        res.status(500).json({ error: 'Failed to update the product' });
+        res.status(500).json({ error: "Failed to update the product" });
     }
 };
 
 // Delete a product by ID
 exports.deleteProductById = async (req, res) => {
     try {
-        const deletedProduct = await Product.findByIdAndRemove(req.params.id);
+        const deletedProduct = await productModel.findByIdAndRemove(req.params.id);
         if (!deletedProduct) {
-            return res.status(404).json({ error: 'Product not found' });
+            return res.status(404).json({ error: "Product not found" });
         }
         res.json(deletedProduct);
     } catch (err) {
-        res.status(500).json({ error: 'Failed to delete the product' });
+        res.status(500).json({ error: "Failed to delete the product" });
     }
 };

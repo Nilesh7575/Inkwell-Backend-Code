@@ -9,7 +9,7 @@ const productSchema = new mongoose.Schema({
         required: true,
         trim: true,
     },
-    _MFRName: {
+    manufacturerName: {
         type: String,
         required: true,
         trim: true,
@@ -61,7 +61,7 @@ const productSchema = new mongoose.Schema({
             packingSize: {
                 type: Number,
             },
-            _MRP: {
+            MRP: {
                 type: Number,
                 required: true,
             },
