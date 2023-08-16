@@ -33,6 +33,7 @@
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
     "dotenv": "^8.2.0",
+    "ejs": "^3.1.9",
     "express": "^4.17.1",
     "express-validation": "^3.0.8",
     "express-winston": "^4.1.0",

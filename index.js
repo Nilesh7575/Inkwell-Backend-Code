@@ -19,6 +19,7 @@ const UserGroupMaster = require("./models/UserGroupMaster.model");
 // const ProductMaster = require("./models/ProductMaster.model");
 const authRoutes = require("./routes/auth.route");
 const menuRoutes = require("./routes/Menu.route");
+const orderRoutes = require('./routes/orderRoutes')
 const app = express();
 const Port = process.env.PORT || 8087;
 app.use(passport.initialize());
@@ -69,6 +70,7 @@ if (process.env.NODE_ENV === "development") {
 app.use(express.static("files"));
 app.use("/menu", menuRoutes);
 app.use("/api", authRoutes);
+app.use('/orders', orderRoutes)
 app.route("/").get((req, res) => res.json("hello world"));
 // app.post('/',(req,res) => {
 //     ProductMaster.create(req.body)
