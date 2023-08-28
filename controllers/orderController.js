@@ -123,12 +123,35 @@ const generateBill = async (req, res, next) => {
 
     // Read the HTML template file
     const template = fs.readFileSync(templatePath, 'utf-8');
+
+    // Create an empty string to store the items HTML
+    let itemsData = [];
+    let casesSellPrice;
+    let bottleSellPrice;
+    let finalItemPrice;
+
+    // Iterate through the items and generate HTML for each item
+    for (const item of order.items) {
+      casesSellPrice = item.agreedSP * item.cases;
+      bottleSellPrice = item.agreedMRP * item.bottles;
+      finalItemPrice = casesSellPrice + bottleSellPrice
+      console.log(finalItemPrice);
+      
+      itemsData.push({
+        productName: item.productName,
+        cases: item.cases,
+        bottles: item.bottles,
+        finalItemPrice: finalItemPrice,
+      });
+
+    }
     
     // Populate placeholders in the template with order information
     const htmlContent = ejs.render(template, {
       orderId: order._id,
       customerName: order.customerName,
       totalAmount: order.totalAmount,
+      items: itemsData,
       // Add more data here
     });
     
