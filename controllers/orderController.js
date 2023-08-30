@@ -2,6 +2,9 @@ const orderModel = require("../models/orderModel");
 const fs = require('fs')
 const ejs = require('ejs')
 const path = require('path')
+const puppeteer = require('puppeteer');
+const aws = require('aws-sdk');
+const PDFDocument = require('pdfkit');
 
 const placeOrder = async (req, res, next) => {
   try {
@@ -129,37 +132,99 @@ const generateBill = async (req, res, next) => {
     let casesSellPrice;
     let bottleSellPrice;
     let finalItemPrice;
+    let taxableAmount;
+    let CGST, SGST, roundedCgst, roundedSgst, roundedItemPriceWithTax;
+    let itemPriceWithTax;
+    let totalOrderValue = 0;
+    let itemCount = 0;
 
     // Iterate through the items and generate HTML for each item
     for (const item of order.items) {
       casesSellPrice = item.agreedSP * item.cases;
       bottleSellPrice = item.agreedMRP * item.bottles;
-      finalItemPrice = casesSellPrice + bottleSellPrice
-      console.log(finalItemPrice);
+      finalItemPrice = casesSellPrice + bottleSellPrice;
+      taxableAmount = finalItemPrice - 0.70 * finalItemPrice;
+      CGST = finalItemPrice - 0.82 * finalItemPrice;
+      roundedCgst = Math.ceil(CGST * 100) / 100;
+      roundedSgst = Math.ceil(CGST * 100) / 100;
+      SGST = finalItemPrice - 0.82 * finalItemPrice;
+      itemPriceWithTax = finalItemPrice + taxableAmount + roundedCgst + roundedSgst;
+      roundedItemPriceWithTax = Math.ceil(itemPriceWithTax * 100) / 100;
+      totalOrderValue = totalOrderValue + roundedItemPriceWithTax
+      itemCount = itemCount + 1;
       
       itemsData.push({
+        itemCount: itemCount,
         productName: item.productName,
         cases: item.cases,
         bottles: item.bottles,
         finalItemPrice: finalItemPrice,
+        casePrice: item.agreedSP,
+        bottlePrice: item.agreedMRP,
+        taxableAmount: taxableAmount,
+        CGST: roundedCgst,
+        SGST: roundedSgst,
+        itemPriceWithTax: roundedItemPriceWithTax
       });
-
     }
     
+    console.log(totalOrderValue);
     // Populate placeholders in the template with order information
     const htmlContent = ejs.render(template, {
       orderId: order._id,
       customerName: order.customerName,
       totalAmount: order.totalAmount,
       items: itemsData,
+      totalOrderValue: totalOrderValue
       // Add more data here
     });
     
+    // Use puppeteer to generate a PDF from the HTML content
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.setContent(htmlContent);
+    const pdfBuffer = await page.pdf();
+    await browser.close();
+
+    // Initialize AWS SDK with your credentials and region
+    const s3 = new aws.S3({
+      accessKeyId: 'AKIAZXPAXMCELO5PB3RB',
+      secretAccessKey: 'dTHAWpRS6zjZbCHoTDiH2TuQ/lO9ISDnDoFus/89',
+      region: 'us-east-1'
+    });
+
+    // Create a PDF file name
+    const pdfFileName = `${order.customerName}_${orderId}.pdf`;
+
+    // Upload the PDF to Amazon S3 bucket
+    const params = {
+      Bucket: 'inkwell-track-it',
+      Key: pdfFileName,
+      Body: pdfBuffer
+    };
+    await s3.upload(params).promise();
+
+    // Get the URL of the uploaded PDF
+    const pdfUrl = s3.getSignedUrl('getObject', {
+      Bucket: 'inkwell-track-it',
+      Key: pdfFileName
+    });
+
+    // Return the PDF URL in the response
+    res.json({
+      "massege": "Your order has been delivered successfully, you can track invoice in documents section.",
+      "data": {
+        "pdfUrl": pdfUrl,
+        "htmlContent": htmlContent 
+      }
+    });
+
     // Set response content type to HTML
-    res.setHeader('Content-Type', 'text/html');
+    // res.setHeader('Content-Type', 'text/html');
     
     // Return the generated HTML bill
-    res.send(htmlContent);
+    // res.send(htmlContent);
+
     
   } catch (error) {
     console.log(error);

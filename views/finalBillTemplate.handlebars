@@ -1,182 +1,307 @@
 <!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<style>
-			body {
-				font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
-				text-align: center;
-				color: #777;
-			}
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Tax Invoice</title>
+    <link rel="shortcut icon" type="image/png" href="./favicon.png" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
 
-			body h1 {
-				font-weight: 300;
-				margin-bottom: 0px;
-				padding-bottom: 0px;
-				color: #000;
-			}
+      .table-bordered td,
+      .table-bordered th {
+        border: 1px solid #ddd;
+        padding: 10px;
+        word-break: break-all;
+      }
 
-			body h3 {
-				font-weight: 300;
-				margin-top: 10px;
-				margin-bottom: 20px;
-				font-style: italic;
-				color: #555;
-			}
-			body h2 {
-				font-weight: 300;
-				margin-top: 10px;
-				margin-bottom: 20px;
-				font-style: normal;
-				color: #555;
-			}
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 0;
+        padding: 0;
+        font-size: 16px;
+      }
+      .h4-14 h4 {
+        font-size: 12px;
+        margin-top: 0;
+        margin-bottom: 5px;
+      }
+      .img {
+        margin-left: "auto";
+        margin-top: "auto";
+        height: 30px;
+      }
+      pre,
+      p {
+        /* width: 99%; */
+        /* overflow: auto; */
+        /* bpicklist: 1px solid #aaa; */
+        padding: 0;
+        margin: 0;
+      }
+      table {
+        font-family: arial, sans-serif;
+        width: 100%;
+        border-collapse: collapse;
+        padding: 1px;
+      }
+      .hm-p p {
+        text-align: left;
+        padding: 1px;
+        padding: 5px 4px;
+      }
+      td,
+      th {
+        text-align: left;
+        padding: 8px 6px;
+      }
+      .table-b td,
+      .table-b th {
+        border: 1px solid #ddd;
+      }
+      th {
+        /* background-color: #ddd; */
+      }
+      .hm-p td,
+      .hm-p th {
+        padding: 3px 0px;
+      }
+      .cropped {
+        float: right;
+        margin-bottom: 20px;
+        height: 100px; /* height of container */
+        overflow: hidden;
+      }
+      .cropped img {
+        width: 400px;
+        margin: 8px 0px 0px 80px;
+      }
+      .main-pd-wrapper {
+        box-shadow: 0 0 10px #ddd;
+        background-color: #fff;
+        border-radius: 10px;
+        padding: 15px;
+      }
+      .table-bordered td,
+      .table-bordered th {
+        border: 1px solid #ddd;
+        padding: 10px;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <section class="main-pd-wrapper" style="width: 1000px; margin: auto">
+      
+      <br style="display: table-header-group">
+        <h4 style="text-align: center; margin-bottom: 10px">
+          <b>Tax Invoice</b>
+		  </h4>
+        <table style="width: 100%; table-layout: fixed; ">
+          <tr>
+            <td>
+              <div
+                style="
+                  text-align: center;
+                  margin: auto;
+                  line-height: 1.5;
+                  font-size: 14px;
+                  color: #4a4a4a;
+                "
+              >
+                <h1 style="font-size: 25px;">
+					INKWELL
+				</h1>
 
-			body a {
-				color: #06f;
-			}
+                <p style="font-weight: bold; margin-top: 15px">
+                  GST TIN : 06AAFCD6498P1ZT
+                </p>
+                <p style="font-weight: bold">
+                  Toll Free No. :
+                  <a href="tel:018001236477" style="color: #00bb07"
+                    >1800-123-6477</a
+                  >
+                </p>
+              </div>
+            </td>
+            <td
+              align="right"
+              style="
+                text-align: right;
+                padding-left: 50px;
+                line-height: 1.5;
+                color: #323232;
+              "
+            >
+              <div>
+                <h4 style="margin-top: 5px; margin-bottom: 5px">
+                  Bill to/ Ship to
+                </h4>
+            	<p>Madhur Country Bar</p> 
+                <p style="font-size: 14px">
+                  Aakriti Rathore,B-268, west vinod nagar, street no.2,near
+                  press apartment bus stand, Patparganj, IP
+                  Extension,Delhi,07,110092,Delhi(07)<br />
+                  Tel:
+                  <a href="tel:01241234568" style="color: #00bb07"
+                    >0124-1234568</a
+                  >
+                </p>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <table
+        class="table table-bordered h4-14"
+        style="width: 100%; -fs-table-paginate: paginate; margin-top: 15px"
+      >
+        <thead style="display: table-header-group">
+          <tr
+            style="
+              margin: 0;
+              background: #fcbd021f;
+              padding: 15px;
+              padding-left: 20px;
+              -webkit-print-color-adjust: exact;
+            "
+          >
+            <td colspan="4">
+              <h3>
+                <span
+                  style="
+                    font-weight: 300;
+                    font-size: 85%;
+                    color: #626262;
+                  "
+                  >Order ID: 1234</span
+                >
+                <p
+                  style="
+                    font-weight: 300;
+                    font-size: 85%;
+                    color: #626262;
+                    margin-top: 7px;
+                  "
+                >
+                  Delivery Estimate:
+                  <span style="color: #00bb07">Today</span
+                  ><br />
+                </p>
+              </h3>
+            </td>
+            <td colspan="5">
+              <p>Invoice No:- 12345</p>
+              <p style="margin: 5px 0">Invoice Date:- Thu May 19 3:41PM</p>
+              <p style="margin-bottom: 5px">CIN: U52100DL2016PTC292777</p>
+              <p>FSSAI License No. 10819005000131</p>
+            </td>
+            <td colspan="4" style="width: 300px">
+              <h4 style="margin: 0">Sold By:</h4>
+              <p>
+                DJT Private Limited, 1st floor,<br />
+                plot no.m1 m2, Deeplife Tower Sector 51, Gurugram-122018
+              </p>
+            </td>
+          </tr>
 
-			.invoice-box {
-				max-width: 800px;
-				margin: auto;
-				padding: 30px;
-				border: 1px solid #eee;
-				box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
-				font-size: 16px;
-				line-height: 24px;
-				font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
-				color: #555;
-			}
+          <tr>
+            <th style="width: 50px">Sr No.</th>
+            <th style="width: 150px"><h4>Item Name</h4></th>
+            <th style="width: 90px">
+              <h4>
+                HSN<br />
+                Code
+              </h4>
+            </th>
+            <th style="width: 60px"><h4>Case QTY</h4></th>
+            <th style="width: 60px"><h4>Bottle QTY</h4></th>
+            <th style="width: 80px">
+              <h4>
+                Unit<br />
+                Price
+              </h4>
+            </th>
+            <th style="width: 60px"><h4>MRP</h4></th>
 
-			.invoice-box table {
-				width: 100%;
-				line-height: inherit;
-				text-align: left;
-				border-collapse: collapse;
-			}
+            <th style="width: 80px">
+              <h4>
+                Taxable <br />
+                Amount
+              </h4>
+            </th>
+            <th style="width: 80px">
+              <h4>
+                Tax <br />
+                Rate %
+              </h4>
+            </th>
+            <th style="width: 80px">
+              <h4>
+                CGST 18%
+                <hr />
+                Amount
+              </h4>
+            </th>
+            <th style="width: 80px">
+              <h4>
+                SGST/<br />
+                UTGST <br />18%
+                <hr />
+                Amount
+              </h4>
+            </th>
+            <th style="width: 100px"><h4>TOTAL Value</h4></th>
+          </tr>
+        </thead>
+        <tbody>
+			<% for (const item of items) { %>
+          <tr>
+            <td><%= item.itemCount%></td>
+            <td><%= item.productName %></td>
+            <td>40590200</td>
+            <td><%= item.cases %></td>
+            <td><%= item.bottles %></td>
+            <td><%= item.casePrice%></td>
+            <td><%= item.bottlePrice%></td>
+            <td><%= item.taxableAmount%></td>
+            <td>30%</td>
+            <td><%= item.CGST%></td>
+            <td><%= item.SGST%></td>
+            <td><%= item.itemPriceWithTax%></td>
+          </tr>
+		  <% } %>
+        </tbody>
+        <tfoot></tfoot>
+      </table>
 
-			.invoice-box table td {
-				padding: 5px;
-				vertical-align: top;
-			}
 
-			.invoice-box table tr td:nth-child(2) {
-				text-align: right;
-			}
+      <table class="hm-p table-bordered" style="width: 100%; margin-top: 30px">
+        
+        <tr style="background: #fcbd02">
+          <th style="width: 50%;">Total Order Value</th>
+          <td style="width: 50%; text-align: right; border-right: none">
+            <b><%= totalOrderValue%></b>
+          </td>
+          <td colspan="5" style="border-left: none"></td>
+        </tr>
+      </table>
 
-			.invoice-box table tr.top table td {
-				padding-bottom: 20px;
-			}
-
-			.invoice-box table tr.top table td.title {
-				font-size: 45px;
-				line-height: 45px;
-				color: #333;
-			}
-
-			.invoice-box table tr.information table td {
-				padding-bottom: 40px;
-			}
-
-			.invoice-box table tr.heading td {
-				background: #eee;
-				border-bottom: 1px solid #ddd;
-				font-weight: bold;
-			}
-
-			.invoice-box table tr.details td {
-				padding-bottom: 20px;
-			}
-
-			.invoice-box table tr.item td {
-				border-bottom: 1px solid #eee;
-			}
-
-			.invoice-box table tr.item.last td {
-				border-bottom: none;
-			}
-
-			.invoice-box table tr.total td:nth-child(2) {
-				border-top: 2px solid #eee;
-				font-weight: bold;
-                
-			}
-
-			@media only screen and (max-width: 600px) {
-				.invoice-box table tr.top table td {
-					width: 100%;
-					display: block;
-					text-align: center;
-				}
-
-				.invoice-box table tr.information table td {
-					width: 100%;
-					display: block;
-					text-align: center;
-				}
-			}
-		</style>
-	</head>
-
-	<body>
-
-		<div class="invoice-box">
-				<div class="top" style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-                    <span class="title">
-                        <h2>INKWELL</h2>
-                    </span>
-                    <span>
-                        Invoice No.: 123<br />
-                        Created: January 1, 2015<br />
-                        Due: February 1, 2015
-                    </span>
-				</div>
-
-				<div class="top" style="display: flex; justify-content: space-between;  margin-bottom: 10px;">
-                    <span>
-                        <%= customerName%><br />
-                        Vijay Mallya
-                    </span>
-                    <span>
-                        Sparksuite, Inc.<br />
-                        12345 Sunny Road<br />
-                        Sunnyville, TX 12345
-                    </span>
-				</div>
-
-			<table>
-				<tr class="heading">
-					<td>Item</td>
-					<td>Cases</td>
-					<td style="text-align: right;">Bottles</td>
-					<td style="text-align: right;">Price</td>
-				</tr>
-
-                <% for (const item of items) { %>
-                    <tr class="item">
-                        <td><%= item.productName %></td>
-                        <td><%= item.cases %></td>
-                        <td style="text-align: right;"><%= item.bottles %></td>
-                        <td style="text-align: right;">₹<%= item.finalItemPrice %></td>
-                    </tr>
-                <% } %>
-
-				<tr class="item">
-					<td colspan="2"></td>
-					<td >SGST: </td>
-					<td style="text-align: right;">18%</td>
-				</tr>
-				<tr class="item">
-					<td colspan="2"></td>
-					<td >CGST: </td>
-					<td style="text-align: right;">18%</td>
-				</tr>
-				<tr class="total">
-					<td colspan="2"></td>
-					<td >Total: </td>
-					<td style="text-align: right;">₹<%= totalAmount %></td>
-				</tr>
-			</table>
-		</div>
-	</body>
+      <table style="width: 100%" cellspacing="0" cellspadding="0" border="0">
+        <tr>
+          <td>
+            <h4 style="margin: 10px 0">
+              Whether tax is Payable under reverse charge - No
+            </h4>
+            <p>
+              This is computer generated invoice and hence signature is not
+              required
+            </p>
+          </td>
+          
+        </tr>
+      </table>
+    </section>
+  </body>
 </html>
