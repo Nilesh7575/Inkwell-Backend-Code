@@ -1,24 +1,26 @@
 const userModel = require("../models/userModel");
+const deviceModel = require("../models/deviceModel")
 const otpGenerator = require("otp-generator");
 const { sendMessageOtp } = require("../helper/whatsAppService");
+const { sendMsg } = require("../helper/smsService");
 
 const createUser = async (req, res) => {
     try {
         const { fullName, email, mobileNumber, profile, userRole } = req.body;
         const { } = profile;
-        const data = await userModel.findOneAndUpdate(
+        const userData = await userModel.findOneAndUpdate(
             { mobileNumber: mobileNumber },
             req.body,
             { new: true }
         );
-        if (!data) {
+        if (!userData) {
             return res
                 .status(400)
                 .send({ success: false, message: "Failed to create" });
         }
         return res
             .status(201)
-            .send({ success: true, message: "Successfully created!", data: data });
+            .send({ success: true, message: "Successfully created!", data: userData });
     } catch (err) {
         console.log(err.message);
     }
@@ -26,7 +28,7 @@ const createUser = async (req, res) => {
 
 const sendOTP = async (req, res) => {
     try {
-        const { mobileNumber } = req.body;
+        const { mobileNumber, deviceIdentifier, deviceName } = req.body;
 
         const otp = otpGenerator.generate(6, {
             lowerCaseAlphabets: false,
@@ -34,12 +36,12 @@ const sendOTP = async (req, res) => {
             specialChars: false,
         });
         console.log("SentOTP Function", otp);
-        const storeOtp = await userModel.findOneAndUpdate(
+        const userData = await userModel.findOneAndUpdate(
             { mobileNumber: mobileNumber },
             { otp: otp },
             { upsert: true, new: true }
         );
-        if (!storeOtp) {
+        if (!userData) {
             return res
                 .status(400)
                 .send({
@@ -48,14 +50,22 @@ const sendOTP = async (req, res) => {
                     message: "error Not Found",
                 });
         }
-        let userExist = storeOtp.email && storeOtp.fullName;
-        const otpSend = await sendMessageOtp(mobileNumber, otp);
-        console.log("whats App response", otpSend);
-        if (otpSend.status !== 200) {
+        let userExist = userData.email && userData.fullName;
+        const otpMsg = await sendMsg(mobileNumber, otp);
+        const otpWhatsApp = await sendMessageOtp(mobileNumber, otp);
+        console.log("otp send response", otpWhatsApp, otpMsg);
+
+        if (!otpMsg.sid) {
             return res
                 .status(500)
                 .send({ success: false, message: "Otp Not send to your number" });
         }
+        await deviceModel.findOneAndUpdate(
+            { userId: userData._id },
+            { userId: userData._id, deviceName: deviceName, deviceId: deviceIdentifier },
+            { upsert: true }
+        );
+
         return res
             .status(200)
             .send({
@@ -67,12 +77,15 @@ const sendOTP = async (req, res) => {
         console.log(err.message);
     }
 };
+
+
 const verifyOTP = async (req, res) => {
     try {
-        const { mobileNumber, otp } = req.body;
-        const data = await userModel.findOne({ mobileNumber: mobileNumber });
-        // console.log(otp,data)
-        if (data.otp !== otp) {
+        const { mobileNumber, otp ,deviceIdentifier} = req.body;
+        const userData = await userModel.findOne({ mobileNumber: mobileNumber });
+        console.log(req.body,userData)
+
+        if (userData.otp !== otp) {
             return res
                 .status(400)
                 .send({
@@ -80,19 +93,38 @@ const verifyOTP = async (req, res) => {
                     message: "Sorry Invalid OTP! Please Verify Mobile Number",
                 });
         }
-        let userExist = data.email && data.fullName ? true : false;
-        console.log(data.email, data.fullName);
+        const device = await deviceModel.findOne({
+            userId: userData._id,
+            deviceId: deviceIdentifier,
+        });
+
+        if (!device) {
+            return res.status(401).send({
+                success: false,
+                message: "Unauthorized: This device is not authorized for this account.",
+            });
+        }
+
+        let userExist = userData.email && userData.fullName ? true : false;
+        console.log(userData.email, userData.fullName);
+
+        // Include device details in the response
         return res
             .status(200)
             .send({
                 success: true,
-                userRegisterd: userExist,
-                message: "verify successfully",
+                userRegistered: userExist,
+                message: "Verify successfully"
             });
     } catch (err) {
         console.log(err.message);
+        return res.status(500).send({
+            success: false,
+            message: "Internal server error"
+        });
     }
 };
+
 
 // Controller function to get all users
 async function getAllUsers(req, res) {

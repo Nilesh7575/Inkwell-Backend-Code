@@ -17,6 +17,9 @@ const userSchema = new mongoose.Schema(
     otp: {
       type: String,
     },
+    companyName: {
+      type: String,
+    },
     profile: {
       address: {
         type: String,
