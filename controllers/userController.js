@@ -1,8 +1,12 @@
 const userModel = require("../models/userModel");
-const deviceModel = require("../models/deviceModel")
+const deviceModel = require("../models/deviceModel");
+const sessionModel = require("../models/sessionModel");
 const otpGenerator = require("otp-generator");
 const { sendMessageOtp } = require("../helper/whatsAppService");
 const { sendMsg } = require("../helper/smsService");
+const jwt = require("jsonwebtoken");
+const { createSession, removeExistingSession, isSessionExpired, } = require("./sessionController");
+const { createDeviceDetails, removeDeviceDetails, } = require("./deviceController")
 
 const createUser = async (req, res) => {
     try {
@@ -20,7 +24,11 @@ const createUser = async (req, res) => {
         }
         return res
             .status(201)
-            .send({ success: true, message: "Successfully created!", data: userData });
+            .send({
+                success: true,
+                message: "Successfully created!",
+                data: userData,
+            });
     } catch (err) {
         console.log(err.message);
     }
@@ -36,21 +44,28 @@ const sendOTP = async (req, res) => {
             specialChars: false,
         });
         console.log("SentOTP Function", otp);
-        const userData = await userModel.findOneAndUpdate(
+
+        const userData = await userModel.findOne({ mobileNumber: mobileNumber });
+
+        if (userData) {
+            await removeExistingSession(userData);
+            await removeDeviceDetails(userData._id);
+        }
+        const updateOtp = await userModel.findOneAndUpdate(
             { mobileNumber: mobileNumber },
             { otp: otp },
             { upsert: true, new: true }
         );
-        if (!userData) {
-            return res
-                .status(400)
-                .send({
-                    success: false,
-                    userRegisterd: false,
-                    message: "error Not Found",
-                });
+
+        if (!updateOtp) {
+            return res.status(400).send({
+                success: false,
+                userRegisterd: false,
+                message: "error Not Found",
+            });
         }
-        let userExist = userData.email && userData.fullName;
+
+        let userExist = userData.email && userData.fullName ? true : false;
         const otpMsg = await sendMsg(mobileNumber, otp);
         const otpWhatsApp = await sendMessageOtp(mobileNumber, otp);
         console.log("otp send response", otpWhatsApp, otpMsg);
@@ -60,76 +75,79 @@ const sendOTP = async (req, res) => {
                 .status(500)
                 .send({ success: false, message: "Otp Not send to your number" });
         }
-        await deviceModel.findOneAndUpdate(
-            { userId: userData._id },
-            { userId: userData._id, deviceName: deviceName, deviceId: deviceIdentifier },
-            { upsert: true }
-        );
 
-        return res
-            .status(200)
-            .send({
-                success: true,
-                userRegisterd: userExist,
-                messsge: "An OTP has been sent to your registered number!",
-            });
+        createDeviceDetails(userData._id, deviceName, deviceIdentifier);
+
+        return res.status(200).send({
+            success: true,
+            userRegisterd: userExist,
+            messsge: "An OTP has been sent to your registered number!",
+        });
     } catch (err) {
         console.log(err.message);
     }
 };
 
-
 const verifyOTP = async (req, res) => {
     try {
-        const { mobileNumber, otp ,deviceIdentifier} = req.body;
+        const { mobileNumber, otp, deviceIdentifier } = req.body;
         const userData = await userModel.findOne({ mobileNumber: mobileNumber });
-        console.log(req.body,userData)
+        console.log(req.body, userData);
 
-        if (userData.otp !== otp) {
-            return res
-                .status(400)
-                .send({
-                    success: false,
-                    message: "Sorry Invalid OTP! Please Verify Mobile Number",
-                });
-        }
-        const device = await deviceModel.findOne({
-            userId: userData._id,
-            deviceId: deviceIdentifier,
-        });
+        if (userData.otp === otp) {
+            await removeExistingSession(userData);
+            await removeDeviceDetails(userData._id);
+            
+            const token = generateToken(userData._id);
+            await createSession(userData._id, token);
 
-        if (!device) {
-            return res.status(401).send({
-                success: false,
-                message: "Unauthorized: This device is not authorized for this account.",
-            });
-        }
+            let userExist = userData.email && userData.fullName ? true : false;
 
-        let userExist = userData.email && userData.fullName ? true : false;
-        console.log(userData.email, userData.fullName);
-
-        // Include device details in the response
-        return res
-            .status(200)
-            .send({
+            return res.status(200).send({
                 success: true,
                 userRegistered: userExist,
-                message: "Verify successfully"
+                token: token,
+                message: "Verify successfully",
             });
+        } else {
+            return res.status(400).send({
+                success: false,
+                message: "Sorry Invalid OTP! Please Verify Mobile Number",
+            });
+        }
     } catch (err) {
         console.log(err.message);
         return res.status(500).send({
             success: false,
-            message: "Internal server error"
+            message: "Internal server error",
         });
     }
 };
 
+const logout = async (req, res) => {
+    try {
+        const { userId, token } = req.body;
+        await removeExistingSession(token);
+
+        await removeDeviceDetails(userId);
+
+        return res.status(200).json({
+            success: true,
+            message: "Logged out successfully",
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+};
 
 // Controller function to get all users
 async function getAllUsers(req, res) {
     try {
-        const users = await userModel.find();
+        const users = await userModel.find({ isDeleted: false });
         return res.status(200).json(users);
     } catch (error) {
         return res.status(500).json({ error: "Error fetching users." });
@@ -152,9 +170,9 @@ async function getUserById(req, res) {
 
 // Controller function to update a user by ID
 async function updateUserById(req, res) {
-    const { id } = req.params;
+    const { userId } = req.params;
     try {
-        const updatedUser = await userModel.findByIdAndUpdate(id, req.body, {
+        const updatedUser = await userModel.findByIdAndUpdate(userId, req.body, {
             new: true,
         });
         if (!updatedUser) {
@@ -168,9 +186,9 @@ async function updateUserById(req, res) {
 
 // Controller function to delete a user by ID
 async function deleteUserById(req, res) {
-    const { id } = req.params;
+    const { userId } = req.params;
     try {
-        const deletedUser = await userModel.findByIdAndDelete(id);
+        const deletedUser = await userModel.findByIdAndDelete(userId);
         if (!deletedUser) {
             return res.status(404).json({ error: "User not found." });
         }
@@ -180,10 +198,17 @@ async function deleteUserById(req, res) {
     }
 }
 
+function generateToken(userId) {
+    const secretKey = process.env.JWT_SECRET_KEY;
+    const token = jwt.sign({ userId }, secretKey, { expiresIn: "8h" });
+    return token;
+}
+
 module.exports = {
     createUser,
     sendOTP,
     verifyOTP,
+    logout,
     getAllUsers,
     getUserById,
     updateUserById,

@@ -4,18 +4,22 @@ const {
     createUser,
     sendOTP,
     verifyOTP,
+    logout,
     getAllUsers,
     getUserById,
     updateUserById,
     deleteUserById,
 } = require("../controllers/userController");
 
-router.post("/create", createUser);
+const { authenticateTokenAndSession } = require("../middleware/authMiddleware")
+
 router.post("/sendOTP", sendOTP);
 router.post("/verifyOTP", verifyOTP);
+router.post("/logout",  logout);
+router.post("/create", authenticateTokenAndSession, createUser);
 router.get("/getAll", getAllUsers);
-router.get("/getById/:id", getUserById);
-router.put("/updateById/:id", updateUserById);
-router.delete("/deleteById/:id", deleteUserById);
+router.get("/getById/:id", authenticateTokenAndSession, getUserById);
+router.put("/updateById/:userId", authenticateTokenAndSession, updateUserById);
+router.delete("/deleteById/:userId", authenticateTokenAndSession, deleteUserById);
 
 module.exports = router;

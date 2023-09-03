@@ -43,13 +43,28 @@ exports.createProduct = async (req, res) => {
 // Get all products
 exports.getAllProducts = async (req, res) => {
     try {
+        const page = parseInt(req.body.page) || 1;
+        const perPage = parseInt(req.body.perPage) || 10;
+
+        const totalProducts = await productModel.countDocuments();
+        const totalPages = Math.ceil(totalProducts / perPage);
+
         const products = await productModel
             .find()
-            .populate("productType")
-            .populate("category")
-            .populate("brandId");
+            .populate({path:'productType',select:"_id typeName"})
+            .populate({path:'category',select:"_id categoryName"})
+            .populate({path:'brandId',select:"_id brandName"})
+            .skip((page - 1) * perPage)
+            .limit(perPage);
 
-        return res.json(products);
+        const response = {
+            page,
+            perPage,
+            totalPages,
+            totalProducts,
+            products,
+        };
+        return res.status(200).send({ success: true, response });
     } catch (err) {
         res.status(500).json({ error: "Failed to get products" });
     }

@@ -8,9 +8,6 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
     },
-    password: {
-      type: String,
-    },
     mobileNumber: {
       type: String,
     },
@@ -41,9 +38,6 @@ const userSchema = new mongoose.Schema(
     isSuperAdmin: {
       type: Boolean,
       default: false,
-    },
-    deviceDetailes: {
-      type: String,
     },
     notificationToken: {
       type: String,

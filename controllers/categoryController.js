@@ -8,7 +8,7 @@ const { validationResult } = require("express-validator");
 exports.createCategory = async (req, res) => {
   try {
     const { categoryName, description } = req.body;
-
+    
     const error = validationResult(req);
     if (!error.isEmpty()) {
       return res

@@ -15,7 +15,7 @@ const expressValidation = require("express-validation");
 const helmet = require("helmet");
 const boom = require("boom");
 require("dotenv").config();
-const customerRoutes = require('./routes/userRoute')
+const userRoutes = require('./routes/userRoute')
 const productRoutes = require('./routes/productRoute')
 const productTypeRoutes = require('./routes/productTypeRoute')
 const brandRoutes = require('./routes/brandRoute')
@@ -69,7 +69,7 @@ app.use(multer().any());
 //authorize user through passport before api routes.
 
 app.use(express.static("files"));
-app.use("/customer", customerRoutes);
+app.use("/user", userRoutes);
 app.use("/products", productRoutes);
 app.use('/product-types', productTypeRoutes);
 app.use('/categories', categoryRoutes);

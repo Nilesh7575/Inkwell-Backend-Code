@@ -9,13 +9,13 @@ const deviceSchema = new mongoose.Schema({
     },
     deviceId: {
         type: String,
-        unique: true, 
+        unique: true,
     },
     deviceName: {
         type: String,
 
     },
-});
+}, { timestamps: true });
 
-module.exports  = mongoose.model('Device', deviceSchema);
+module.exports = mongoose.model('Device', deviceSchema);
 
