@@ -15,11 +15,19 @@ const expressValidation = require("express-validation");
 const helmet = require("helmet");
 const boom = require("boom");
 require("dotenv").config();
+<<<<<<< HEAD
 const UserGroupMaster = require("./models/UserGroupMaster.model");
 // const ProductMaster = require("./models/ProductMaster.model");
 const authRoutes = require("./routes/auth.route");
 const menuRoutes = require("./routes/Menu.route");
 const orderRoutes = require('./routes/orderRoutes')
+=======
+const userRoutes = require('./routes/userRoute')
+const productRoutes = require('./routes/productRoute')
+const productTypeRoutes = require('./routes/productTypeRoute')
+const brandRoutes = require('./routes/brandRoute')
+const categoryRoutes = require('./routes/categoryRoute')
+>>>>>>> e0873f032b047ed55287d6f3eaa1e3350da1d1b6
 const app = express();
 const Port = process.env.PORT || 8087;
 app.use(passport.initialize());
@@ -32,42 +40,44 @@ app.use(methodOverride());
 app.use(cors());
 app.use(helmet());
 Promise = require("bluebird");
-
+const multer = require("multer");
 mongoose.Promise = Promise;
+app.use(multer().any());
 
-if (process.env.NODE_ENV === "development") {
-  app.use(logger("dev"));
-  expressWinston.requestWhitelist.push("body");
-  expressWinston.responseWhitelist.push("body");
-  app.use(
-    expressWinston.logger({
-      transports: [
-        new winston.transports.Console({
-          format: winston.format.simple(),
-          json: false,
-          colorize: true,
-        }),
-        new winston.transports.File({
-          filename: "config/success.log",
-          level: "success",
-          json: true,
-        }),
-      ],
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.json()
-      ),
-      meta: true,
-      msg:
-        " HTTP {{req.method}} {{req.url}} {{req.statusCode}} {{res.responseTime}}ms",
-      colorize: true,
-    })
-  );
-}
+// if (process.env.NODE_ENV === "development") {
+//   app.use(logger("dev"));
+//   expressWinston.requestWhitelist.push("body");
+//   expressWinston.responseWhitelist.push("body");
+//   app.use(
+//     expressWinston.logger({
+//       transports: [
+//         new winston.transports.Console({
+//           format: winston.format.simple(),
+//           json: false,
+//           colorize: true,
+//         }),
+//         new winston.transports.File({
+//           filename: "config/success.log",
+//           level: "success",
+//           json: true,
+//         }),
+//       ],
+//       format: winston.format.combine(
+//         winston.format.colorize(),
+//         winston.format.json()
+//       ),
+//       meta: true,
+//       msg:
+//         " HTTP {{req.method}} {{req.url}} {{req.statusCode}} {{res.responseTime}}ms",
+//       colorize: true,
+//     })
+//   );
+// }
 
 //authorize user through passport before api routes.
 
 app.use(express.static("files"));
+<<<<<<< HEAD
 app.use("/menu", menuRoutes);
 app.use("/api", authRoutes);
 app.use('/orders', orderRoutes)
@@ -80,6 +90,13 @@ app.route("/").get((req, res) => res.json("hello world"));
 //         console.log(err);
 //     })
 // })
+=======
+app.use("/user", userRoutes);
+app.use("/products", productRoutes);
+app.use('/product-types', productTypeRoutes);
+app.use('/categories', categoryRoutes);
+app.use('/brands', brandRoutes);
+>>>>>>> e0873f032b047ed55287d6f3eaa1e3350da1d1b6
 
 app.use((err, req, res, next) => {
   if (err instanceof expressValidation.ValidationError) {
@@ -91,6 +108,8 @@ app.use((err, req, res, next) => {
   }
   return next(err);
 });
+
+app.all('/*', (req, res) => res.status(400).send({ success: false, message: 'Check Your Route path Address' }))
 
 if (process.env.NODE_ENV !== "test") {
   app.use(
@@ -127,33 +146,32 @@ if (process.env.NODE_ENV === "development") {
       useUnifiedTopology: true,
     })
     .then((result) => {
-      app.listen(process.env.PORT, () =>
-        console.log(
-          `Development Server started on port ${process.env.PORT} ${process.env.NODE_ENV}`
-        )
-      );
+      console.log('MongoDB is Connected!');
     })
     .catch((err) => {
       console.log(err);
       throw new Error(`Unable to connect to database ${process.env.MONGODB}`);
     });
+  app.listen(process.env.PORT, () =>
+    console.log(
+      `Server started on port ${process.env.PORT} ${process.env.NODE_ENV}`
+    )
+  );
 }
 
 if (process.env.NODE_ENV === "test") {
   mongoose
     .connect(process.env.MONGO_HOST + process.env.MONGODB)
     .then((result) => {
-      app.listen(process.env.MONGO_TEST_PORT, () =>
-        console.log(
-          `Test Server started on port ${process.env.MONGO_TEST_PORT} ${process.env.NODE_ENV}`
-        )
-      );
+      console.log('MongoDB is Connected!');
     })
     .catch((err) => {
       console.log(err);
-      throw new Error(
-        `Unable to connect to database ${process.env.MONGOTESTDB}`
-      );
+      throw new Error(`Unable to connect to database ${process.env.MONGODB}`);
     });
-  }
- 
+  app.listen(process.env.MONGO_TEST_PORT, () =>
+    console.log(
+      `Server started on port ${process.env.MONGO_TEST_PORT} ${process.env.NODE_ENV}`
+    )
+  );
+}
