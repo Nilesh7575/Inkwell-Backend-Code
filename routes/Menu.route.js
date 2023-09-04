@@ -1,10 +1,10 @@
-const express = require("express");
-const controller = require("../controllers/Menu.controller");
+// const express = require("express");
+// const controller = require("../controllers/Menu.controller");
 
-const router = express.Router();
+// const router = express.Router();
 
-router.post("/createMenu", controller.createNewMenu);
+// router.post("/createMenu", controller.createNewMenu);
 
-router.get("/getMenu?firmId=", controller.getMenu);
+// router.get("/getMenu?firmId=", controller.getMenu);
 
-module.exports = router;
+// module.exports = router;
