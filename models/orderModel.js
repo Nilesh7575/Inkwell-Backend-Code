@@ -1,13 +1,27 @@
 const mongoose = require("mongoose")
+const productModel = require('./productModel')
+
 
 const object_id = mongoose.Schema.Types.ObjectId
 
 
 const orderSchema = mongoose.Schema(
     {
-        // customerId: {
+        // distributerId: {
         //     type: object_id,
-            // ref: customerSchema
+            // ref: distributerSchema
+        // },
+        // distributerStoreId: {
+        //     type: object_id,
+            // ref: distributerStoreSchema
+        // },
+        // retailerStoreId: {
+        //     type: object_id,
+            // ref: retailerStoreSchema
+        // },
+        // retailerId: {
+        //     type: object_id,
+            // ref: retailerSchema
         // },
         // salesmanId: {
         //     type: object_id,
@@ -51,7 +65,23 @@ const orderSchema = mongoose.Schema(
         ],
         totalAmount: {
             type: Number,
-            require: true
+            required: true
+        },
+        totalItemCount: {
+            type: Number,
+            required: true
+        },
+        isDeleted: {
+            type: Boolean,
+            default: false,
+        },
+        pendingAmount: {
+            type: Number,
+            required: true
+        },
+        paidAmount: {
+            type: Number,
+            required: true
         },
         orderStatus: {
             type: String,
