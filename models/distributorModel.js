@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const userSchema = new mongoose.Schema(
+const distributorSchema = new mongoose.Schema(
   {
     fullName: {
       type: String,
@@ -31,10 +31,6 @@ const userSchema = new mongoose.Schema(
         type: Date,
       },
     },
-    userRole: {
-      type: String,
-      enum: ["DISTRIBUTOR", "SALESMAN", "RETAILER"],
-    },
     isSuperAdmin: {
       type: Boolean,
       default: false,
@@ -55,4 +51,4 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model("Distributor", distributorSchema);

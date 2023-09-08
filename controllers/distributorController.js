@@ -1,4 +1,4 @@
-const userModel = require("../models/userModel");
+const userModel = require("../models/distributorModel");
 const deviceModel = require("../models/deviceModel");
 const sessionModel = require("../models/sessionModel");
 const otpGenerator = require("otp-generator");
@@ -8,7 +8,7 @@ const jwt = require("jsonwebtoken");
 const { createSession, removeExistingSession, isSessionExpired, } = require("./sessionController");
 const { createDeviceDetails, removeDeviceDetails, } = require("./deviceController")
 
-const createUser = async (req, res) => {
+const createDistributor = async (req, res) => {
     try {
         const { fullName, email, mobileNumber, profile, userRole } = req.body;
         const { } = profile;
@@ -45,19 +45,28 @@ const sendOTP = async (req, res) => {
         });
         console.log("SentOTP Function", otp);
 
-        const userData = await userModel.findOne({ mobileNumber: mobileNumber });
+        let userData = await userModel.findOne({ mobileNumber: mobileNumber });
 
         if (userData) {
             await removeExistingSession(userData);
             await removeDeviceDetails(userData._id);
         }
-        const updateOtp = await userModel.findOneAndUpdate(
-            { mobileNumber: mobileNumber },
-            { otp: otp },
-            { upsert: true, new: true }
-        );
+        if (userData) {
+            const updateOtp = await userModel.findOneAndUpdate(
+                { mobileNumber: mobileNumber },
+                { otp: otp },
+                { upsert: true, new: true }
+            );
+            userData = updateOtp
+        } else {
+            const saveOtp = await userModel.create({
+                mobileNumber: mobileNumber,
+                otp: otp
+            })
+            userData = saveOtp
+        }
 
-        if (!updateOtp) {
+        if (!userData) {
             return res.status(400).send({
                 success: false,
                 userRegisterd: false,
@@ -65,7 +74,7 @@ const sendOTP = async (req, res) => {
             });
         }
 
-        let userExist = userData.email && userData.fullName ? true : false;
+        let userExist = !(userData && !userData.email && !userData.fullName);
         const otpMsg = await sendMsg(mobileNumber, otp);
         const otpWhatsApp = await sendMessageOtp(mobileNumber, otp);
         console.log("otp send response", otpWhatsApp, otpMsg);
@@ -96,8 +105,8 @@ const verifyOTP = async (req, res) => {
 
         if (userData.otp === otp) {
             await removeExistingSession(userData);
-            await removeDeviceDetails(userData._id);
-            
+            // await removeDeviceDetails(userData._id);
+
             const token = generateToken(userData._id);
             await createSession(userData._id, token);
 
@@ -145,9 +154,14 @@ const logout = async (req, res) => {
 };
 
 // Controller function to get all users
-async function getAllUsers(req, res) {
+async function getAllDistributor(req, res) {
     try {
-        const users = await userModel.find({ isDeleted: false });
+        const users = await userModel.find({
+            isDeleted: false,
+            fullName: { $exists: true },
+            email: { $exists: true },
+            companyName: { $exists: true }
+        });
         return res.status(200).json(users);
     } catch (error) {
         return res.status(500).json({ error: "Error fetching users." });
@@ -155,7 +169,7 @@ async function getAllUsers(req, res) {
 }
 
 // Controller function to get a single user by ID
-async function getUserById(req, res) {
+async function getDistributorById(req, res) {
     const { id } = req.params;
     try {
         const user = await userModel.findById(id);
@@ -169,7 +183,7 @@ async function getUserById(req, res) {
 }
 
 // Controller function to update a user by ID
-async function updateUserById(req, res) {
+async function updateDistributor(req, res) {
     const { userId } = req.params;
     try {
         const updatedUser = await userModel.findByIdAndUpdate(userId, req.body, {
@@ -185,7 +199,7 @@ async function updateUserById(req, res) {
 }
 
 // Controller function to delete a user by ID
-async function deleteUserById(req, res) {
+async function deleteDistributor(req, res) {
     const { userId } = req.params;
     try {
         const deletedUser = await userModel.findByIdAndDelete(userId);
@@ -205,12 +219,12 @@ function generateToken(userId) {
 }
 
 module.exports = {
-    createUser,
+    createDistributor,
     sendOTP,
     verifyOTP,
     logout,
-    getAllUsers,
-    getUserById,
-    updateUserById,
-    deleteUserById,
+    getAllDistributor,
+    getDistributorById,
+    updateDistributor,
+    deleteDistributor,
 };

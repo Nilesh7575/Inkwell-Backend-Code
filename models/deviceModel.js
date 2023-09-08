@@ -15,6 +15,10 @@ const deviceSchema = new mongoose.Schema({
         type: String,
 
     },
+    isDeleted: {
+        type: Boolean,
+        default: false
+    },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Device', deviceSchema);

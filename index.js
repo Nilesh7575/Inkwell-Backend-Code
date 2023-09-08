@@ -15,15 +15,20 @@ const expressValidation = require("express-validation");
 const helmet = require("helmet");
 const boom = require("boom");
 require("dotenv").config();
-// const ProductMaster = require("./models/ProductMaster.model");
-// const authRoutes = require("./routes/auth.route");
-// const menuRoutes = require("./routes/Menu.route");
+
+
 const orderRoutes = require('./routes/orderRoutes')
-const userRoutes = require('./routes/userRoute')
-const productRoutes = require('./routes/productRoute')
+const distributorRoutes = require('./routes/distributorRoutes')
+const distributorStoreRoutes = require('./routes/distributorStoreRoutes')
+const salesmanRoutes = require('./routes/salesmanRoutes')
+const retailerRoutes = require("./routes/retailerRoutes")
+const retailerStoreRoutes = require("./routes/retailerStoreRoutes")
+const productRoutes = require('./routes/productRoutes')
 const productTypeRoutes = require('./routes/productTypeRoute')
 const brandRoutes = require('./routes/brandRoute')
 const categoryRoutes = require('./routes/categoryRoute')
+
+
 const app = express();
 const Port = process.env.PORT || 8087;
 app.use(passport.initialize());
@@ -73,23 +78,21 @@ app.use(multer().any());
 //authorize user through passport before api routes.
 
 app.use(express.static("files"));
-// app.use("/menu", menuRoutes);
-// app.use("/api", authRoutes);
 app.use('/orders', orderRoutes)
 app.route("/").get((req, res) => res.json("hello world"));
-// app.post('/',(req,res) => {
-//     ProductMaster.create(req.body)
-//     .then(result => {
-//         console.log(result);
-//     }).catch(err => {
-//         console.log(err);
-//     })
-// })
-app.use("/user", userRoutes);
+app.use("/distributor", distributorRoutes);
+app.use("/distributorStore", distributorStoreRoutes);
+app.use("/retailer", retailerRoutes);
+app.use("/retailerStore", retailerStoreRoutes);
+app.use("/salesman", salesmanRoutes)
 app.use("/products", productRoutes);
 app.use('/product-types', productTypeRoutes);
 app.use('/categories', categoryRoutes);
 app.use('/brands', brandRoutes);
+app.use('/brands', brandRoutes);
+app.use('/brands', brandRoutes);
+app.use('/brands', brandRoutes);
+
 
 app.use((err, req, res, next) => {
   if (err instanceof expressValidation.ValidationError) {
