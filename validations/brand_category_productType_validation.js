@@ -1,8 +1,8 @@
 const Joi = require('joi');
 const { body } = require('express-validator');
-const brandModel = require("../models/brandModel");
-const categoryModel = require("../models/categoryModel");
-const productTypeModel = require("../models/productTypeModel");
+const brandModel = require("../brand-services/models/brandModel");
+const categoryModel = require("../category-services/models/categoryModel");
+const productTypeModel = require("../productTypes-services/models/productTypeModel");
 
 
 const brandValidation = [

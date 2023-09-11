@@ -17,16 +17,16 @@ const boom = require("boom");
 require("dotenv").config();
 
 
-const orderRoutes = require('./routes/orderRoutes')
-const distributorRoutes = require('./routes/distributorRoutes')
-const distributorStoreRoutes = require('./routes/distributorStoreRoutes')
-const salesmanRoutes = require('./routes/salesmanRoutes')
-const retailerRoutes = require("./routes/retailerRoutes")
-const retailerStoreRoutes = require("./routes/retailerStoreRoutes")
-const productRoutes = require('./routes/productRoutes')
-const productTypeRoutes = require('./routes/productTypeRoute')
-const brandRoutes = require('./routes/brandRoute')
-const categoryRoutes = require('./routes/categoryRoute')
+const orderRoutes = require('./order-services/routes/orderRoutes')
+const distributorRoutes = require('./distributor-services/routes/distributorRoutes')
+const distributorStoreRoutes = require('./distributor-services/routes/distributorStoreRoutes')
+const salesmanRoutes = require('./salesman-sevices/routes/salesmanRoutes')
+const retailerRoutes = require("./retailer-services/routes/retailerRoutes")
+const retailerStoreRoutes = require("./retailer-services/routes/retailerStoreRoutes")
+const productRoutes = require('./product-services/routes/productRoutes')
+const productTypeRoutes = require('./productTypes-services/routes/productTypeRoute')
+const brandRoutes = require('./brand-services/routes/brandRoute')
+const categoryRoutes = require('./category-services/routes/categoryRoute')
 
 
 const app = express();
@@ -89,9 +89,7 @@ app.use("/products", productRoutes);
 app.use('/product-types', productTypeRoutes);
 app.use('/categories', categoryRoutes);
 app.use('/brands', brandRoutes);
-app.use('/brands', brandRoutes);
-app.use('/brands', brandRoutes);
-app.use('/brands', brandRoutes);
+
 
 
 app.use((err, req, res, next) => {

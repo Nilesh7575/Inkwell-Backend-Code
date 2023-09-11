@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const sessionModel = require('../models/sessionModel');
+const sessionModel = require('../session-services/models/sessionModel');
 
 const secretKey = process.env.JWT_SECRET_KEY
 
