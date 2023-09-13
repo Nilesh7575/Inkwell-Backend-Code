@@ -28,3 +28,6 @@ const transactionSchema = new mongoose.Schema(
         },
     }
 )
+
+
+module.exports = mongoose.model('transactionTable', transactionSchema)

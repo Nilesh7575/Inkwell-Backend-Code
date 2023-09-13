@@ -27,6 +27,7 @@ const productRoutes = require('./product-services/routes/productRoutes')
 const productTypeRoutes = require('./productTypes-services/routes/productTypeRoute')
 const brandRoutes = require('./brand-services/routes/brandRoute')
 const categoryRoutes = require('./category-services/routes/categoryRoute')
+const outstandingRoutes = require('./outstanding-services/routes/outstandingRoutes')
 
 
 const app = express();
@@ -89,6 +90,7 @@ app.use("/products", productRoutes);
 app.use('/product-types', productTypeRoutes);
 app.use('/categories', categoryRoutes);
 app.use('/brands', brandRoutes);
+app.use('/outstandings', outstandingRoutes)
 
 
 
