@@ -64,10 +64,6 @@ const orderSchema = mongoose.Schema(
             type: Number,
             required: true
         },
-        totalItemCount: {
-            type: Number,
-            required: true
-        },
         isDeleted: {
             type: Boolean,
             default: false,
@@ -78,7 +74,7 @@ const orderSchema = mongoose.Schema(
         },
         paidAmount: {
             type: Number,
-            required: true
+            default: 0
         },
         orderStatus: {
             type: String,

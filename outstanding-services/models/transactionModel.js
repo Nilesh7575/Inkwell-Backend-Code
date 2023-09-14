@@ -16,6 +16,19 @@ const transactionSchema = new mongoose.Schema(
             enum: ['SUCCESSFUL','FAILED', 'PENDING'],
             default: 'PENDING'
         },
+        amount: {
+            type: Number,
+            required: true
+        },
+        bankName: {
+            type: String,
+        },
+        accountNo: {
+            type: String
+        },
+        chequeNo: {
+            type: Number
+        },
         transactionDate: {
             type: Date,
             required: true
@@ -25,6 +38,8 @@ const transactionSchema = new mongoose.Schema(
         },
         paymentMode: {
             type: String,
+            enum: ['UPI','CHEQUE', 'CASH'],
+            required: true
         },
     }
 )
