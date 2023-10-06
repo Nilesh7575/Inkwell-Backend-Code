@@ -4,17 +4,13 @@ const object_id = mongoose.Schema.Types.ObjectId
 
 const orderSchema = mongoose.Schema(
     {
-        distributerId: {
+        distributorId: {
             type: object_id,
             ref: "distributerSchema"
         },
-        distributerStoreId: {
+        distributorStoreId: {
             type: object_id,
             ref: "distributerStoreSchema"
-        },
-        retailerStoreId: {
-            type: object_id,
-            ref: "retailerStoreSchema"
         },
         retailerId: {
             type: object_id,

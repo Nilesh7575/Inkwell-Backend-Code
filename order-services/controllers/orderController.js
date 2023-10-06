@@ -1,15 +1,27 @@
 const orderModel = require("../models/orderModel");
-const fs = require('fs')
-const ejs = require('ejs')
-const path = require('path')
-const puppeteer = require('puppeteer');
-const aws = require('aws-sdk');
-const PDFDocument = require('pdfkit');
+const fs = require("fs");
+const ejs = require("ejs");
+const path = require("path");
+const puppeteer = require("puppeteer");
+const aws = require("aws-sdk");
+const PDFDocument = require("pdfkit");
 
 const placeOrder = async (req, res, next) => {
   try {
-    const { items, totalAmount, orderStatus, customerName } = req.body;
-
+    const {
+      items,
+      totalAmount,
+      orderStatus,
+      customerName,
+      distributorId,
+      distributorStoreId,
+      retailerId,
+      salesmanId,
+      pendingAmount,
+      paidAmount,
+    } = req.body;
+    
+    
     // Validate request body
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: "Items must be a non-empty array" });
@@ -21,9 +33,15 @@ const placeOrder = async (req, res, next) => {
       customerName: customerName,
       totalAmount: totalAmount,
       orderStatus: orderStatus,
+      distributorId : distributorId,
+      distributorStoreId : distributorStoreId,
+      retailerId : retailerId,
+      salesmanId : salesmanId,
+      pendingAmount : pendingAmount,
+      paidAmount : paidAmount,
     });
 
-    return res.status(201).json(order);
+    return res.status(201).json({ message: 'Order placed successfully', order });
   } catch (error) {
     next(error);
   }
@@ -113,7 +131,7 @@ const updateOrderStatus = async (req, res, next) => {
 const generateBill = async (req, res, next) => {
   try {
     console.log("In generTE BILL FUNCTION");
-    const orderId = req.params.orderId
+    const orderId = req.params.orderId;
     console.log(orderId);
     // Retrieve the order information from the database
     const order = await orderModel.findById(orderId);
@@ -122,10 +140,15 @@ const generateBill = async (req, res, next) => {
     }
 
     // Construct the correct file path relative to the script's directory
-    const templatePath = path.join(__dirname, '..', 'views', 'finalBillTemplate.handlebars');
+    const templatePath = path.join(
+      __dirname,
+      "..",
+      "views",
+      "finalBillTemplate.handlebars"
+    );
 
     // Read the HTML template file
-    const template = fs.readFileSync(templatePath, 'utf-8');
+    const template = fs.readFileSync(templatePath, "utf-8");
 
     // Create an empty string to store the items HTML
     let itemsData = [];
@@ -143,16 +166,17 @@ const generateBill = async (req, res, next) => {
       casesSellPrice = item.agreedSP * item.cases;
       bottleSellPrice = item.agreedMRP * item.bottles;
       finalItemPrice = casesSellPrice + bottleSellPrice;
-      taxableAmount = finalItemPrice - 0.70 * finalItemPrice;
+      taxableAmount = finalItemPrice - 0.7 * finalItemPrice;
       CGST = finalItemPrice - 0.82 * finalItemPrice;
       roundedCgst = Math.ceil(CGST * 100) / 100;
       roundedSgst = Math.ceil(CGST * 100) / 100;
       SGST = finalItemPrice - 0.82 * finalItemPrice;
-      itemPriceWithTax = finalItemPrice + taxableAmount + roundedCgst + roundedSgst;
+      itemPriceWithTax =
+        finalItemPrice + taxableAmount + roundedCgst + roundedSgst;
       roundedItemPriceWithTax = Math.ceil(itemPriceWithTax * 100) / 100;
-      totalOrderValue = totalOrderValue + roundedItemPriceWithTax
+      totalOrderValue = totalOrderValue + roundedItemPriceWithTax;
       itemCount = itemCount + 1;
-      
+
       itemsData.push({
         itemCount: itemCount,
         productName: item.productName,
@@ -164,10 +188,10 @@ const generateBill = async (req, res, next) => {
         taxableAmount: taxableAmount,
         CGST: roundedCgst,
         SGST: roundedSgst,
-        itemPriceWithTax: roundedItemPriceWithTax
+        itemPriceWithTax: roundedItemPriceWithTax,
       });
     }
-    
+
     console.log(totalOrderValue);
     // Populate placeholders in the template with order information
     const htmlContent = ejs.render(template, {
@@ -175,10 +199,10 @@ const generateBill = async (req, res, next) => {
       customerName: order.customerName,
       totalAmount: order.totalAmount,
       items: itemsData,
-      totalOrderValue: totalOrderValue
+      totalOrderValue: totalOrderValue,
       // Add more data here
     });
-    
+
     // Use puppeteer to generate a PDF from the HTML content
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
@@ -188,9 +212,9 @@ const generateBill = async (req, res, next) => {
 
     // Initialize AWS SDK with your credentials and region
     const s3 = new aws.S3({
-      accessKeyId: 'AKIAZXPAXMCELO5PB3RB',
-      secretAccessKey: 'dTHAWpRS6zjZbCHoTDiH2TuQ/lO9ISDnDoFus/89',
-      region: 'us-east-1'
+      accessKeyId: "AKIAZXPAXMCELO5PB3RB",
+      secretAccessKey: "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",
+      region: "us-east-1",
     });
 
     // Create a PDF file name
@@ -198,40 +222,37 @@ const generateBill = async (req, res, next) => {
 
     // Upload the PDF to Amazon S3 bucket
     const params = {
-      Bucket: 'inkwell-track-it',
+      Bucket: "inkwell-track-it",
       Key: pdfFileName,
-      Body: pdfBuffer
+      Body: pdfBuffer,
     };
     await s3.upload(params).promise();
 
     // Get the URL of the uploaded PDF
-    const pdfUrl = s3.getSignedUrl('getObject', {
-      Bucket: 'inkwell-track-it',
-      Key: pdfFileName
+    const pdfUrl = s3.getSignedUrl("getObject", {
+      Bucket: "inkwell-track-it",
+      Key: pdfFileName,
     });
 
     // Return the PDF URL in the response
     res.json({
-      "massege": "Your order has been delivered successfully, you can track invoice in documents section.",
-      "data": {
-        "pdfUrl": pdfUrl,
-        "htmlContent": htmlContent 
-      }
+      massege:
+        "Your order has been delivered successfully, you can track invoice in documents section.",
+      data: {
+        pdfUrl: pdfUrl,
+        htmlContent: htmlContent,
+      },
     });
 
     // Set response content type to HTML
     // res.setHeader('Content-Type', 'text/html');
-    
+
     // Return the generated HTML bill
     // res.send(htmlContent);
-
-    
   } catch (error) {
     console.log(error);
-    next(error)
+    next(error);
   }
-}
-
-
+};
 
 module.exports = { getAllOrders, placeOrder, updateOrderStatus, generateBill };

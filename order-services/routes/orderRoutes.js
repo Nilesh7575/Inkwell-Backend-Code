@@ -4,7 +4,7 @@ const { getAllOrders, placeOrder, updateOrderStatus, generateBill }  = require('
 const { authenticateTokenAndSession } = require("../../middleware/authMiddleware")
 
 router.get('/get-all-orders',authenticateTokenAndSession, getAllOrders)
-router.post('/place-order',authenticateTokenAndSession, placeOrder)
+router.post('/place-order', placeOrder)
 router.put('/update-status',authenticateTokenAndSession, updateOrderStatus)
 router.get('/generateBill/:orderId',authenticateTokenAndSession, generateBill)
 

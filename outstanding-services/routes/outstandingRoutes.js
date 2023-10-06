@@ -12,7 +12,7 @@ const {
 
 router.get(
   "/getAllPartysOrders",
-  authenticateTokenAndSession,
+  // authenticateTokenAndSession,
   getAllPartysOrders
 );
 router.get(
