@@ -28,6 +28,10 @@ const storeSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    pan: {
+        type: String,
+        required: true,
+    },
     vat_number: {
         type: String,
         required: true,

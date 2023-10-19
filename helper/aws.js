@@ -9,12 +9,12 @@ const s3 = new S3Client({
 });
 
 const uploadImageFile = async (file) => {
-  const bucketName = "ask-akshay";
+  const bucketName = "inkwell-track-it";
 
   const uploadParams = {
-    ACL: "public-read",
+    // ACL: "public-read",
     Bucket: bucketName,
-    Key: "inkewell/" + file.originalname,
+    Key: "trakkero/" + file.originalname,
     Body: file.buffer,
   };
 

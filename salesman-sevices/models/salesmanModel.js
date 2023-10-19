@@ -25,6 +25,9 @@ const salesmanSchema = new mongoose.Schema({
         state: String,
         postal_code: String,
     },
+    aadhar: {
+        type: String,
+      },
     date_of_birth: Date,
     hire_date: Date,
     sales_region: String,
