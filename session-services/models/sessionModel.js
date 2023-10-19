@@ -6,10 +6,9 @@ const sessionSchema = new mongoose.Schema({
         required: true,
         ref: 'User',
     },
-    token: {
+    tokenIssueAt: {
         type: String,
         required: true,
-        unique: true,
     },
 
 }, { timestamps: true });

@@ -1,11 +1,12 @@
 const sessionModel = require("../models/sessionModel");
 
 // Create a new session when a user logs in
-const createSession = async (userId, token) => {
+const createSession = async (userId) => {
     try {
+        const currentTimestamp = Date.now();
         const session = new sessionModel({
             userId: userId,
-            token: token,
+            tokenIssueAt: currentTimestamp,
         });
         await session.save();
     } catch (error) {

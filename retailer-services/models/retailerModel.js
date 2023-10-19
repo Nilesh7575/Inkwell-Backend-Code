@@ -6,6 +6,11 @@ const retailerSchema = new mongoose.Schema({
         ref: "Distributor",
         required: true,
     },
+    distributorStoreId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: " Distributorstore",
+        required: true,
+    },
     fullName: {
         type: String,
     },

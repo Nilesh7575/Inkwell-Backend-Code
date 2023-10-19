@@ -1,4 +1,4 @@
-const Distributorstore = require('../models/distributorStoreModel');
+const Distributorstore = require("../models/distributorStoreModel");
 
 // Controller for getting all stores
 const getAllStores = async (req, res) => {
@@ -6,7 +6,7 @@ const getAllStores = async (req, res) => {
         const stores = await Distributorstore.find();
         res.json(stores);
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching stores', error });
+        res.status(500).json({ message: "Error fetching stores", error });
     }
 };
 
@@ -16,11 +16,11 @@ const getStoreById = async (req, res) => {
     try {
         const store = await Distributorstore.findById(id);
         if (!store) {
-            return res.status(404).json({ message: 'Store not found' });
+            return res.status(404).json({ message: "Store not found" });
         }
         res.json(store);
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching store', error });
+        res.status(500).json({ message: "Error fetching store", error });
     }
 };
 
@@ -31,7 +31,7 @@ const createStore = async (req, res) => {
         const newStore = await Distributorstore.create(storeData);
         res.status(201).json(newStore);
     } catch (error) {
-        res.status(400).json({ message: 'Error creating store', error });
+        res.status(400).json({ message: "Error creating store", error });
     }
 };
 
@@ -40,15 +40,19 @@ const updateStore = async (req, res) => {
     const { id } = req.params;
     const updatedStoreData = req.body;
     try {
-        const updatedStore = await Distributorstore.findByIdAndUpdate(id, updatedStoreData, {
-            new: true,
-        });
+        const updatedStore = await Distributorstore.findByIdAndUpdate(
+            id,
+            updatedStoreData,
+            {
+                new: true,
+            }
+        );
         if (!updatedStore) {
-            return res.status(404).json({ message: 'Store not found' });
+            return res.status(404).json({ message: "Store not found" });
         }
         res.json(updatedStore);
     } catch (error) {
-        res.status(400).json({ message: 'Error updating store', error });
+        res.status(400).json({ message: "Error updating store", error });
     }
 };
 
@@ -58,11 +62,11 @@ const deleteStore = async (req, res) => {
     try {
         const deletedStore = await Distributorstore.findByIdAndRemove(id);
         if (!deletedStore) {
-            return res.status(404).json({ message: 'Store not found' });
+            return res.status(404).json({ message: "Store not found" });
         }
-        res.json({ message: 'Store deleted successfully' });
+        res.json({ message: "Store deleted successfully" });
     } catch (error) {
-        res.status(500).json({ message: 'Error deleting store', error });
+        res.status(500).json({ message: "Error deleting store", error });
     }
 };
 

@@ -1,9 +1,9 @@
-const userModel = require("../models/distributorModel");
+const distributorModel = require("../models/distributorModel");
 const deviceModel = require("../../session-services/models/deviceModel");
 const sessionModel = require("../../session-services/models/sessionModel");
 const otpGenerator = require("otp-generator");
 const { sendMessageOtp } = require("../../helper/whatsAppService");
-const { sendMsg } = require("../../helper/smsService");
+const { sendMsg, sendSMS } = require("../../helper/smsService");
 const jwt = require("jsonwebtoken");
 const { createSession, removeExistingSession, isSessionExpired, } = require("../../session-services/controllers/sessionController");
 const { createDeviceDetails, removeDeviceDetails, } = require("../../session-services/controllers/deviceController")
@@ -12,7 +12,7 @@ const createDistributor = async (req, res) => {
     try {
         const { fullName, email, mobileNumber, profile, userRole } = req.body;
         const { } = profile;
-        const userData = await userModel.findOneAndUpdate(
+        const userData = await distributorModel.findOneAndUpdate(
             { mobileNumber: mobileNumber },
             req.body,
             { new: true }
@@ -36,7 +36,7 @@ const createDistributor = async (req, res) => {
 
 const sendOTP = async (req, res) => {
     try {
-        const { mobileNumber, deviceIdentifier, deviceName } = req.body;
+        const { mobileNumber, deviceId, deviceName } = req.body;
 
         const otp = otpGenerator.generate(6, {
             lowerCaseAlphabets: false,
@@ -45,21 +45,21 @@ const sendOTP = async (req, res) => {
         });
         console.log("SentOTP Function", otp);
 
-        let userData = await userModel.findOne({ mobileNumber: mobileNumber });
+        let userData = await distributorModel.findOne({ mobileNumber: mobileNumber });
 
         if (userData) {
             await removeExistingSession(userData);
             await removeDeviceDetails(userData._id);
         }
         if (userData) {
-            const updateOtp = await userModel.findOneAndUpdate(
+            const updateOtp = await distributorModel.findOneAndUpdate(
                 { mobileNumber: mobileNumber },
                 { otp: otp },
                 { upsert: true, new: true }
             );
             userData = updateOtp
         } else {
-            const saveOtp = await userModel.create({
+            const saveOtp = await distributorModel.create({
                 mobileNumber: mobileNumber,
                 otp: otp
             })
@@ -75,17 +75,17 @@ const sendOTP = async (req, res) => {
         }
 
         let userExist = !(userData && !userData.email && !userData.fullName);
-        const otpMsg = await sendMsg(mobileNumber, otp);
-        const otpWhatsApp = await sendMessageOtp(mobileNumber, otp);
-        console.log("otp send response", otpWhatsApp, otpMsg);
+        const otpMsg = await sendSMS(mobileNumber, otp);
+        // const otpWhatsApp = await sendMessageOtp(mobileNumber, otp);
+        // console.log("otp send response", otpWhatsApp, otpMsg);
 
-        if (!otpMsg.sid) {
+        if (!otpMsg.data) {
             return res
                 .status(500)
                 .send({ success: false, message: "Otp Not send to your number" });
         }
 
-        createDeviceDetails(userData._id, deviceName, deviceIdentifier);
+        createDeviceDetails(userData._id, deviceName, deviceId);
 
         return res.status(200).send({
             success: true,
@@ -99,16 +99,17 @@ const sendOTP = async (req, res) => {
 
 const verifyOTP = async (req, res) => {
     try {
-        const { mobileNumber, otp, deviceIdentifier } = req.body;
-        const userData = await userModel.findOne({ mobileNumber: mobileNumber });
+        const { mobileNumber, otp, deviceName, deviceId } = req.body;
+        const userData = await distributorModel.findOne({ mobileNumber: mobileNumber });
         console.log(req.body, userData);
 
         if (userData.otp === otp) {
-            await removeExistingSession(userData);
-            // await removeDeviceDetails(userData._id);
+            // await removeExistingSession(userData);
+            await removeDeviceDetails(userData._id);
 
-            const token = generateToken(userData._id);
-            await createSession(userData._id, token);
+            const token = generateToken(userData._id, deviceName, deviceId);
+            // await createSession(userData._id);
+            createDeviceDetails(userData._id, deviceName, deviceId);
 
             let userExist = userData.email && userData.fullName ? true : false;
 
@@ -136,8 +137,7 @@ const verifyOTP = async (req, res) => {
 const logout = async (req, res) => {
     try {
         const { userId, token } = req.body;
-        await removeExistingSession(token);
-
+        // await removeExistingSession(token);
         await removeDeviceDetails(userId);
 
         return res.status(200).json({
@@ -156,7 +156,7 @@ const logout = async (req, res) => {
 // Controller function to get all users
 async function getAllDistributor(req, res) {
     try {
-        const users = await userModel.find({
+        const users = await distributorModel.find({
             isDeleted: false,
             fullName: { $exists: true },
             email: { $exists: true },
@@ -172,7 +172,7 @@ async function getAllDistributor(req, res) {
 async function getDistributorById(req, res) {
     const { id } = req.params;
     try {
-        const user = await userModel.findById(id);
+        const user = await distributorModel.findById(id);
         if (!user) {
             return res.status(404).json({ error: "User not found." });
         }
@@ -186,7 +186,7 @@ async function getDistributorById(req, res) {
 async function updateDistributor(req, res) {
     const { userId } = req.params;
     try {
-        const updatedUser = await userModel.findByIdAndUpdate(userId, req.body, {
+        const updatedUser = await distributorModel.findByIdAndUpdate(userId, req.body, {
             new: true,
         });
         if (!updatedUser) {
@@ -202,7 +202,7 @@ async function updateDistributor(req, res) {
 async function deleteDistributor(req, res) {
     const { userId } = req.params;
     try {
-        const deletedUser = await userModel.findByIdAndDelete(userId);
+        const deletedUser = await distributorModel.findByIdAndDelete(userId);
         if (!deletedUser) {
             return res.status(404).json({ error: "User not found." });
         }
@@ -212,9 +212,21 @@ async function deleteDistributor(req, res) {
     }
 }
 
-function generateToken(userId) {
+
+function generateToken(userId, deviceName, deviceId) {
     const secretKey = process.env.JWT_SECRET_KEY;
-    const token = jwt.sign({ userId }, secretKey, { expiresIn: "8h" });
+
+    const payload = {
+        userId,
+        deviceName,
+        deviceId,
+    };
+
+    const options = {
+        expiresIn: '8h',
+    };
+
+    const token = jwt.sign(payload, secretKey, options);
     return token;
 }
 

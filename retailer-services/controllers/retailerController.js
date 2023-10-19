@@ -28,6 +28,7 @@ const getRetailerById = async (req, res) => {
 const createRetailer = async (req, res) => {
     const retailerData = req.body;
     try {
+
         const newRetailer = await Retailer.create(retailerData);
         res.status(201).json(newRetailer);
     } catch (error) {

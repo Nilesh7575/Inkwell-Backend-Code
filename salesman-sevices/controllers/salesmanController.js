@@ -28,6 +28,7 @@ const getSalesmanById = async (req, res) => {
 const createSalesman = async (req, res) => {
     const salesmanData = req.body;
     try {
+
         const newSalesman = await Salesman.create(salesmanData);
         res.status(201).json(newSalesman);
     } catch (error) {

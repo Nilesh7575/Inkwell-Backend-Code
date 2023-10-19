@@ -6,6 +6,11 @@ const salesmanSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Distributor',
     },
+    distributorStoreId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: " Distributorstore",
+        required: true,
+    },
     fullName: {
         type: String,
         required: true,
