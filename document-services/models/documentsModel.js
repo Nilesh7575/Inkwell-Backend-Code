@@ -12,7 +12,7 @@ const documentsSchema = mongoose.Schema({
     },
     documentType: {
         type: String,
-            enum: ['KYC', 'ORDERBILL'],
+        enum: ['KYC', 'ORDERBILL'],
     }
 },
 {
