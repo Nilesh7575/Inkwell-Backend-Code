@@ -1,5 +1,5 @@
 const mongoose = require("mongoose")
-const object_id = mongoose.Schema.Types.ObjectId
+// const object_id = mongoose.Schema.Types.ObjectId
 
 const resourceSchema = mongoose.Schema({
     price : {
@@ -27,6 +27,7 @@ const resourceSchema = mongoose.Schema({
     timestamps: true,
 })
 
-module.exports = mongoose.model("resourceDB", resourceSchema)
+module.exports = mongoose.model("Resources", resourceSchema)
 // POST,GET,DEL,UPDATE
-// ONlY ADMiN
+// ONlY ADMIN
+

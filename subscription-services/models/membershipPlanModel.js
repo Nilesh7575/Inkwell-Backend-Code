@@ -1,22 +1,20 @@
 const mongoose = require("mongoose")
 const object_id = mongoose.Schema.Types.ObjectId
 
-const packageSchema = mongoose.Schema({
+const membershipPlanSchema = mongoose.Schema({
     price : {
         type: Number,
         required: true
     },
-    // Uesr REf Id
+    distributorId: {
+        type: object_id,
+        ref: "distributerSchema",
+    },
+    distributorStoreId: {
+        type: object_id,
+        ref: "distributerStoreSchema"
+    },
     // User Role
-
-    // startDate: {
-    //     type : Date,
-    //     required: true
-    // },
-    // endDate: {
-    //     type : Date,
-    //     required: true
-    // },
     durationType: {
         type : String,
         enum: ['MONTH', 'YEAR'],
@@ -28,7 +26,7 @@ const packageSchema = mongoose.Schema({
     },
     planType :{
         type: String,
-        enum: ['DMS', 'SFA', 'MIXED'],
+        enum: ['DMS', 'SFA', "DMS+SFA"],
     },
     planDiscription :{
         type: String,
@@ -36,11 +34,9 @@ const packageSchema = mongoose.Schema({
     },
     sfaQuantity : {
         type: Number,
-        required: true
     },
     dmsQuantity : {
         type: Number,
-        required: true
     },
     discountValue :{
         type: Number,
@@ -49,7 +45,7 @@ const packageSchema = mongoose.Schema({
     timestamps: true,
 })
 
-module.exports = mongoose.model("membershipPlanDB", packageSchema)
+module.exports = mongoose.model("MembershipPlan", membershipPlanSchema)
 
 
-// POST,GET,DEL,UODATE
+// POST,GET,DEL,UPDATE
