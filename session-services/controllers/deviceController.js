@@ -1,19 +1,15 @@
 const deviceModel = require("../models/deviceModel");
+const sessionModel = require("../models/sessionModel");
 
 const createDeviceDetails = async (userId, deviceName, deviceId) => {
     try {
-        const findDevice = await deviceModel.find({ deviceId: deviceId })
-        console.log(findDevice.length)
+        const findDevice = await sessionModel.findOneAndUpdate({ userId: userId }, {
+            deviceName: deviceName,
+            deviceId: deviceId,
+        });
 
-        if (findDevice.length > 0) {
-            await deviceModel.findOneAndUpdate({ deviceId: deviceId }, { isDeleted: false })
-        } else {
-            await deviceModel.create({
-                userId: userId,
-                deviceName: deviceName,
-                deviceId: deviceId,
-            });
-        }
+        console.log(findDevice);
+        
     } catch (err) {
         console.error(err);
         throw err;

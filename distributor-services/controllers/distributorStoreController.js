@@ -1,9 +1,10 @@
-const Distributorstore = require("../models/distributorStoreModel");
+const distributorModel = require("../models/distributorModel");
+const distributorStoreModel = require("../models/distributorStoreModel");
 
 // Controller for getting all stores
 const getAllStores = async (req, res) => {
     try {
-        const stores = await Distributorstore.find();
+        const stores = await distributorStoreModel.find();
         res.json(stores);
     } catch (error) {
         res.status(500).json({ message: "Error fetching stores", error });
@@ -14,7 +15,7 @@ const getAllStores = async (req, res) => {
 const getStoreById = async (req, res) => {
     const { id } = req.params;
     try {
-        const store = await Distributorstore.findById(id);
+        const store = await distributorStoreModel.findById(id);
         if (!store) {
             return res.status(404).json({ message: "Store not found" });
         }
@@ -28,7 +29,9 @@ const getStoreById = async (req, res) => {
 const createStore = async (req, res) => {
     const storeData = req.body;
     try {
-        const newStore = await Distributorstore.create(storeData);
+        const newStore = await distributorStoreModel.create(storeData);
+        const addStoreId = await distributorModel.findByIdAndUpdate(storeData.distrubutorId, { $push: { stores: newStore._id } });
+
         res.status(201).json(newStore);
     } catch (error) {
         res.status(400).json({ message: "Error creating store", error });
@@ -40,7 +43,7 @@ const updateStore = async (req, res) => {
     const { id } = req.params;
     const updatedStoreData = req.body;
     try {
-        const updatedStore = await Distributorstore.findByIdAndUpdate(
+        const updatedStore = await distributorStoreModel.findByIdAndUpdate(
             id,
             updatedStoreData,
             {
@@ -60,7 +63,7 @@ const updateStore = async (req, res) => {
 const deleteStore = async (req, res) => {
     const { id } = req.params;
     try {
-        const deletedStore = await Distributorstore.findByIdAndRemove(id);
+        const deletedStore = await distributorStoreModel.findByIdAndRemove(id);
         if (!deletedStore) {
             return res.status(404).json({ message: "Store not found" });
         }

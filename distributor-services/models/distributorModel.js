@@ -11,12 +11,6 @@ const distributorSchema = new mongoose.Schema(
     mobileNumber: {
       type: String,
     },
-    otp: {
-      type: String,
-    },
-    otpAttempts: {
-      type: Number
-    },
     companyName: {
       type: String,
     },
@@ -34,6 +28,12 @@ const distributorSchema = new mongoose.Schema(
         type: Date,
       },
     },
+    stores: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Distributorstore",
+      }
+    ],
     isSuperAdmin: {
       type: Boolean,
       default: false,

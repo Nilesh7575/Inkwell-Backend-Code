@@ -8,11 +8,11 @@ router.post("/sendOTP", distributorController.sendOTP);
 router.post("/verifyOTP", distributorController.verifyOTP);
 router.post("/logout", distributorController.logout);
 
-router.get('/getAll', distributorController.getAllDistributor);
 router.get('/:id', authenticateTokenAndSession, distributorController.getDistributorById);
-router.post('/',  distributorController.createDistributor);
-router.put('/:id', authenticateTokenAndSession, distributorController.updateDistributor);
+router.post('/', authenticateTokenAndSession, distributorController.createDistributor);
+router.put('/:userId', authenticateTokenAndSession, distributorController.updateDistributor);
 router.delete('/:id', authenticateTokenAndSession, distributorController.deleteDistributor);
 
+router.get('/getAll', distributorController.getAllDistributor);
 
 module.exports = router;

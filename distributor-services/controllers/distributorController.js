@@ -4,20 +4,19 @@ const sessionModel = require("../../session-services/models/sessionModel");
 const otpGenerator = require("otp-generator");
 const { sendMessageOtp } = require("../../helper/whatsAppService");
 const { sendMsg, sendSMS } = require("../../helper/smsService");
-const jwt = require("jsonwebtoken");
 const { createSession, removeExistingSession, isSessionExpired, } = require("../../session-services/controllers/sessionController");
 const { createDeviceDetails, removeDeviceDetails, } = require("../../session-services/controllers/deviceController");
 const distributorStoreModel = require("../models/distributorStoreModel");
+const { generateTokens } = require("../../helper/tokenGenerate");
 
 const createDistributor = async (req, res) => {
     try {
         const { fullName, email, mobileNumber, profile, userRole } = req.body;
         const { } = profile;
-        const userData = await distributorModel.findOneAndUpdate(
-            { mobileNumber: mobileNumber },
-            req.body,
-            { new: true }
-        );
+
+        const userData = await distributorModel.findOneAndUpdate({ mobileNumber: mobileNumber }, req.body);
+
+        console.log(userData);
         if (!userData) {
             return res
                 .status(400)
@@ -35,15 +34,31 @@ const createDistributor = async (req, res) => {
     }
 };
 
+const cleanupOldAttempts = async (userId) => {
+    await sessionModel.updateMany(
+        { userId, updatedAt: { $lt: new Date(Date.now() - 2 * 60 * 1000) } },
+        { $set: { otpAttempts: 0 } }
+    );
+};
+
 const sendOTP = async (req, res) => {
     try {
         const { mobileNumber, deviceId, deviceName } = req.body;
 
+        let userData = await distributorModel.findOne({ mobileNumber: mobileNumber });
+
+        if (!userData) {
+            userData = await distributorModel.create({ mobileNumber: mobileNumber });
+        }
+
+        // Cleanup old attempts before checking recent attempts
+        await cleanupOldAttempts(userData._id);
+
         // Check if the user has attempted more than 4 times within the last 15 minutes
-        const recentAttempts = await distributorModel.countDocuments({
-            mobileNumber: mobileNumber,
-            updatedAt: { $gte: new Date(Date.now() - 15 * 60 * 1000) },
-            otpAttempts: { $gte: 4 },
+        const recentAttempts = await sessionModel.countDocuments({
+            userId: userData._id,
+            updatedAt: { $gte: new Date(Date.now() - 2 * 60 * 1000) },
+            otpAttempts: { $gte: 3 },
         });
 
         if (recentAttempts > 0) {
@@ -60,33 +75,21 @@ const sendOTP = async (req, res) => {
         });
         console.log("SentOTP Function", otp);
 
-        let userData = await distributorModel.findOne({ mobileNumber: mobileNumber });
-
-        if (userData) {
-            await removeExistingSession(userData);
-            await removeDeviceDetails(userData._id);
-        }
-        if (userData) {
-            const updateOtp = await distributorModel.findOneAndUpdate(
-                { mobileNumber: mobileNumber },
-                { otp: otp, $inc: { otpAttempts: 1 } },
-                { upsert: true, new: true }
-            );
-            userData = updateOtp;
-        } else {
-            const saveOtp = await distributorModel.create({
-                mobileNumber: mobileNumber,
+        // if (userData) {
+        //     await removeExistingSession(userData);
+        //     // await removeDeviceDetails(userData._id);
+        // }
+        const findSession = await sessionModel.findOne({ userId: userData._id, });
+        if (!findSession) {
+            const saveOtp = await sessionModel.create({
+                userId: userData._id,
                 otp: otp,
                 otpAttempts: 1,
             });
-            userData = saveOtp;
-        }
-
-        if (!userData) {
-            return res.status(400).send({
-                success: false,
-                userRegisterd: false,
-                message: "error Not Found",
+        } else {
+            const updateSession = await sessionModel.findOneAndUpdate({ userId: userData._id }, {
+                otp: otp,
+                otpAttempts: findSession.otpAttempts + 1
             });
         }
 
@@ -101,6 +104,7 @@ const sendOTP = async (req, res) => {
 
         return res.status(200).send({
             success: true,
+            otp: otp,
             userRegisterd: userExist,
             messsge: "An OTP has been sent to your registered number!",
         });
@@ -116,7 +120,7 @@ const sendOTP = async (req, res) => {
 const verifyOTP = async (req, res) => {
     try {
         const { mobileNumber, otp, deviceName, deviceId } = req.body;
-        const userData = await distributorModel.findOne({ mobileNumber: mobileNumber });
+        const userData = await distributorModel.findOne({ mobileNumber: mobileNumber }).populate('stores')
 
         if (!userData) {
             return res.status(400).send({
@@ -124,13 +128,14 @@ const verifyOTP = async (req, res) => {
                 message: "User not found",
             });
         }
+        const findSession = await sessionModel.findOne({ userId: userData._id, });
 
-        if (userData.otp === otp) {
-            // Check if OTP is expired (15 minutes)
-            const otpExpirationTime = 15 * 60 * 1000; // in milliseconds
+        if (findSession.otp === otp) {
+            // Check if OTP is expired (3 minutes)
+            const otpExpirationTime = 3 * 60 * 1000; // in milliseconds
             const currentTime = new Date().getTime();
 
-            if (currentTime - userData.updatedAt.getTime() > otpExpirationTime) {
+            if (currentTime - findSession.updatedAt.getTime() > otpExpirationTime) {
                 return res.status(400).send({
                     success: false,
                     message: "OTP has expired. Please request a new OTP.",
@@ -138,11 +143,11 @@ const verifyOTP = async (req, res) => {
             }
 
             // Reset OTP attempts after successful verification
-            await distributorModel.findByIdAndUpdate(userData._id, { $set: { otpAttempts: 0 } });
+            await sessionModel.findOneAndUpdate({ userId: userData._id }, { $set: { otpAttempts: 0 } });
 
-            // Remove existing session and device details
-            await removeExistingSession(userData);
-            await removeDeviceDetails(userData._id);
+            // // Remove existing session and device details
+            // await removeExistingSession(userData);
+            // await removeDeviceDetails(userData._id);
 
             const { accessToken, refreshToken, expiresIn } = generateTokens(userData._id, deviceName, deviceId);
 
@@ -152,8 +157,8 @@ const verifyOTP = async (req, res) => {
             let stores = [];
             let userDetails = '';
             if (userExist) {
-                userDetails=userData;
-                stores = await distributorStoreModel.find({ distributorId: userData._id });
+                userDetails = userData;
+                // stores = await distributorStoreModel.find({ distributorId: userData._id });
             }
 
             return res.status(200).send({
@@ -163,14 +168,10 @@ const verifyOTP = async (req, res) => {
                 expiresIn: expiresIn,
                 userExist: userExist,
                 userDetails: userDetails,
-                stores: stores,
                 subscription: "",
                 message: "Verify successfully",
             });
         } else {
-            // Increment OTP attempts after failed verification
-            await distributorModel.findByIdAndUpdate(userData._id, { $inc: { otpAttempts: 1 } });
-
             return res.status(400).send({
                 success: false,
                 message: "Sorry Invalid OTP! Please Verify Mobile Number",
@@ -180,16 +181,16 @@ const verifyOTP = async (req, res) => {
         console.log(err.message);
         return res.status(500).send({
             success: false,
-            message: "Internal server error",
+            message: `Internal server error:${err.message}`,
         });
     }
 };
 
 const logout = async (req, res) => {
     try {
-        const { userId, token } = req.body;
-        // await removeExistingSession(token);
-        await removeDeviceDetails(userId);
+        const { userId, mobileNumber } = req.body;
+        await removeExistingSession(userId, mobileNumber);
+        // await removeDeviceDetails(userId);
 
         return res.status(200).json({
             success: true,
@@ -236,10 +237,9 @@ async function getDistributorById(req, res) {
 // Controller function to update a user by ID
 async function updateDistributor(req, res) {
     const { userId } = req.params;
+    console.log(userId)
     try {
-        const updatedUser = await distributorModel.findByIdAndUpdate(userId, req.body, {
-            new: true,
-        });
+        const updatedUser = await distributorModel.findByIdAndUpdate(userId, req.body, { new: true, });
         if (!updatedUser) {
             return res.status(404).json({ error: "User not found." });
         }
@@ -262,42 +262,6 @@ async function deleteDistributor(req, res) {
         return res.status(500).json({ error: "Error deleting user." });
     }
 }
-
-
-const generateToken = (userId, deviceName, deviceId, isRefreshToken, expiresIn) => {
-    const secretKey = process.env.JWT_SECRET_KEY;
-
-    const payload = {
-        userId,
-        deviceName,
-        deviceId,
-    };
-
-    const options = {
-        expiresIn: isRefreshToken ? expiresIn : '8h',
-    };
-
-    // Sign the token using the secret key and options
-    const token = jwt.sign(payload, secretKey, options);
-    return token;
-}
-
-// Function to generate both access token, refresh token, and expiration time
-const generateTokens = (userId, deviceName, deviceId) => {
-    // Set the expiration time for the access token (e.g., 8 hours)
-    const accessTokenExpiresIn = 8 * 60 * 60; // in seconds
-
-    // Set the expiration time for the refresh token (e.g., 7 days)
-    const refreshTokenExpiresIn = 24 * 60 * 60; // in seconds
-
-    // Generate an access token with the specified expiration time
-    const accessToken = generateToken(userId, deviceName, deviceId, false, accessTokenExpiresIn);
-
-    // Generate a refresh token with the specified expiration time
-    const refreshToken = generateToken(userId, deviceName, deviceId, true, refreshTokenExpiresIn);
-
-    return { accessToken, refreshToken, expiresIn: accessTokenExpiresIn };
-};
 
 
 module.exports = {
