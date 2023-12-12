@@ -14,6 +14,9 @@ const distributorSchema = new mongoose.Schema(
     otp: {
       type: String,
     },
+    otpAttempts: {
+      type: Number
+    },
     companyName: {
       type: String,
     },
