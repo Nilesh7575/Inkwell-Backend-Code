@@ -9,7 +9,7 @@ router.post("/verifyOTP", distributorController.verifyOTP);
 router.post("/logout", distributorController.logout);
 
 router.get('/:id', authenticateTokenAndSession, distributorController.getDistributorById);
-router.post('/', authenticateTokenAndSession, distributorController.createDistributor);
+router.post('/', distributorController.createDistributor);
 router.put('/:userId', authenticateTokenAndSession, distributorController.updateDistributor);
 router.delete('/:id', authenticateTokenAndSession, distributorController.deleteDistributor);
 

@@ -32,6 +32,7 @@ const kycRoutes = require('./document-services/routes/distributor-kyc-routes')
 const resourceRoutes = require('./subscription-services/routes/resourceRoutes')
 const membershipRoutes = require('./subscription-services/routes/membershipRoutes')
 const subscriptionRoutes = require('./subscription-services/routes/subscriptionRoutes')
+const businessCategoryRoutes = require('./businessCategory-services/routes/businessCategoryRoutes')
 
 
 const app = express();
@@ -99,6 +100,7 @@ app.use('/kyc', kycRoutes)
 app.use('/resources', resourceRoutes)
 app.use('/membership', membershipRoutes)
 app.use('/subscriptions', subscriptionRoutes)
+app.use('/business-category', businessCategoryRoutes)
 
 
 

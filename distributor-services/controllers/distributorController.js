@@ -11,10 +11,17 @@ const { generateTokens } = require("../../helper/tokenGenerate");
 
 const createDistributor = async (req, res) => {
     try {
-        const { fullName, email, mobileNumber, profile, userRole } = req.body;
+        const { deviceName, deviceId, fullName, email, mobileNumber, profile, userRole, companyName, businessCategory } = req.body;
         const { } = profile;
 
         const userData = await distributorModel.findOneAndUpdate({ mobileNumber: mobileNumber }, req.body);
+
+        const newStore = await distributorStoreModel.create({ distrubutorId: userData._id, store_name: companyName, businessCategory: businessCategory });
+        const addStoreId = await distributorModel.findByIdAndUpdate(userData._id, { $push: { stores: newStore._id } });
+
+        const { accessToken, refreshToken, expiresIn } = generateTokens(userData._id, deviceName, deviceId);
+
+        createDeviceDetails(userData._id, deviceName, deviceId);
 
         console.log(userData);
         if (!userData) {
@@ -27,7 +34,9 @@ const createDistributor = async (req, res) => {
             .send({
                 success: true,
                 message: "Successfully created!",
-                data: userData,
+                token: accessToken,
+                refreshToken: refreshToken,
+                userData: userData,
             });
     } catch (err) {
         console.log(err.message);
@@ -44,6 +53,41 @@ const cleanupOldAttempts = async (userId) => {
 const sendOTP = async (req, res) => {
     try {
         const { mobileNumber, deviceId, deviceName } = req.body;
+
+        if (!mobileNumber) {
+            return res.status(400).json({
+                success: false,
+                incorrectNumber: true,
+                message: "Invalid mobile number. Please enter a valid mobile number.",
+            });
+        }
+
+        const numericRegex = /^[0-9]+$/;
+        if (!numericRegex.test(mobileNumber)) {
+            return res.status(400).json({
+                success: false,
+                incorrectNumber: true,
+                message: "Invalid mobile number. Please enter a valid mobile number.",
+            });
+        }
+
+        if (mobileNumber.length !== 10) {
+            return res.status(400).json({
+                success: false,
+                incorrectNumber: true,
+                message: "Invalid mobile number. Please enter a valid mobile number.",
+            });
+        }
+
+        const mobileRegex = /^[6-9]\d{9}$/;
+        if (!mobileRegex.test(mobileNumber)) {
+            return res.status(400).json({
+                success: false,
+                incorrectNumber: true,
+                message: "Invalid mobile number. Please enter a valid mobile number.",
+            });
+        }
+
 
         let userData = await distributorModel.findOne({ mobileNumber: mobileNumber });
 
@@ -64,6 +108,8 @@ const sendOTP = async (req, res) => {
         if (recentAttempts > 0) {
             return res.status(429).json({
                 success: false,
+                requestOverload: true,
+                waitTime: 30,
                 message: "Too many OTP attempts. Please try again after 30 minutes.",
             });
         }
@@ -93,7 +139,6 @@ const sendOTP = async (req, res) => {
             });
         }
 
-        let userExist = !(userData && !userData.email && !userData.fullName);
         const otpMsg = await sendSMS(mobileNumber, otp);
 
         if (!otpMsg.data) {
@@ -105,7 +150,6 @@ const sendOTP = async (req, res) => {
         return res.status(200).send({
             success: true,
             otp: otp,
-            userRegisterd: userExist,
             messsge: "An OTP has been sent to your registered number!",
         });
     } catch (err) {
@@ -138,6 +182,7 @@ const verifyOTP = async (req, res) => {
             if (currentTime - findSession.updatedAt.getTime() > otpExpirationTime) {
                 return res.status(400).send({
                     success: false,
+                    otpExpired: true,
                     message: "OTP has expired. Please request a new OTP.",
                 });
             }
@@ -153,27 +198,32 @@ const verifyOTP = async (req, res) => {
 
             createDeviceDetails(userData._id, deviceName, deviceId);
 
+            let responseData;
+
             let userExist = userData.email && userData.companyName ? true : false;
-            let stores = [];
-            let userDetails = '';
-            if (userExist) {
-                userDetails = userData;
-                // stores = await distributorStoreModel.find({ distributorId: userData._id });
+
+            if (!userExist) {
+                responseData = {
+                    success: true,
+                    userExist: userExist,
+                    message: "Verify successfully",
+                }
             }
 
-            return res.status(200).send({
+            responseData = {
                 success: true,
+                userExist: userExist,
                 token: accessToken,
                 refreshToken: refreshToken,
-                expiresIn: expiresIn,
-                userExist: userExist,
-                userDetails: userDetails,
-                subscription: "",
                 message: "Verify successfully",
-            });
+            }
+
+            return res.status(200).send(responseData);
+
         } else {
             return res.status(400).send({
                 success: false,
+                invalidOtp: true,
                 message: "Sorry Invalid OTP! Please Verify Mobile Number",
             });
         }
