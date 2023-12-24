@@ -34,7 +34,7 @@ const createStore = async (req, res) => {
 
         res.status(201).json(newStore);
     } catch (error) {
-        res.status(400).json({ message: "Error creating store", error });
+        res.status(200).json({ message: "Error creating store", error });
     }
 };
 
@@ -55,7 +55,7 @@ const updateStore = async (req, res) => {
         }
         res.json(updatedStore);
     } catch (error) {
-        res.status(400).json({ message: "Error updating store", error });
+        res.status(200).json({ message: "Error updating store", error });
     }
 };
 

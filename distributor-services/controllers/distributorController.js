@@ -26,7 +26,7 @@ const createDistributor = async (req, res) => {
         console.log(userData);
         if (!userData) {
             return res
-                .status(400)
+                .status(200)
                 .send({ success: false, message: "Failed to create" });
         }
         return res
@@ -55,7 +55,7 @@ const sendOTP = async (req, res) => {
         const { mobileNumber, deviceId, deviceName } = req.body;
 
         if (!mobileNumber) {
-            return res.status(400).json({
+            return res.status(200).json({
                 success: false,
                 incorrectNumber: true,
                 message: "Invalid mobile number. Please enter a valid mobile number.",
@@ -64,7 +64,7 @@ const sendOTP = async (req, res) => {
 
         const numericRegex = /^[0-9]+$/;
         if (!numericRegex.test(mobileNumber)) {
-            return res.status(400).json({
+            return res.status(200).json({
                 success: false,
                 incorrectNumber: true,
                 message: "Invalid mobile number. Please enter a valid mobile number.",
@@ -72,7 +72,7 @@ const sendOTP = async (req, res) => {
         }
 
         if (mobileNumber.length !== 10) {
-            return res.status(400).json({
+            return res.status(200).json({
                 success: false,
                 incorrectNumber: true,
                 message: "Invalid mobile number. Please enter a valid mobile number.",
@@ -81,7 +81,7 @@ const sendOTP = async (req, res) => {
 
         const mobileRegex = /^[6-9]\d{9}$/;
         if (!mobileRegex.test(mobileNumber)) {
-            return res.status(400).json({
+            return res.status(200).json({
                 success: false,
                 incorrectNumber: true,
                 message: "Invalid mobile number. Please enter a valid mobile number.",
@@ -106,7 +106,7 @@ const sendOTP = async (req, res) => {
         });
 
         if (recentAttempts > 0) {
-            return res.status(429).json({
+            return res.status(200).json({
                 success: false,
                 requestOverload: true,
                 waitTime: 30,
@@ -167,7 +167,7 @@ const verifyOTP = async (req, res) => {
         const userData = await distributorModel.findOne({ mobileNumber: mobileNumber }).populate('stores')
 
         if (!userData) {
-            return res.status(400).send({
+            return res.status(200).send({
                 success: false,
                 message: "User not found",
             });
@@ -180,7 +180,7 @@ const verifyOTP = async (req, res) => {
             const currentTime = new Date().getTime();
 
             if (currentTime - findSession.updatedAt.getTime() > otpExpirationTime) {
-                return res.status(400).send({
+                return res.status(200).send({
                     success: false,
                     otpExpired: true,
                     message: "OTP has expired. Please request a new OTP.",
@@ -221,7 +221,7 @@ const verifyOTP = async (req, res) => {
             return res.status(200).send(responseData);
 
         } else {
-            return res.status(400).send({
+            return res.status(200).send({
                 success: false,
                 invalidOtp: true,
                 message: "Sorry Invalid OTP! Please Verify Mobile Number",
