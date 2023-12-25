@@ -208,15 +208,16 @@ const verifyOTP = async (req, res) => {
                     userExist: userExist,
                     message: "Verify successfully",
                 }
+            } else {
+                responseData = {
+                    success: true,
+                    userExist: userExist,
+                    token: accessToken,
+                    refreshToken: refreshToken,
+                    message: "Verify successfully",
+                }
             }
 
-            responseData = {
-                success: true,
-                userExist: userExist,
-                token: accessToken,
-                refreshToken: refreshToken,
-                message: "Verify successfully",
-            }
 
             return res.status(200).send(responseData);
 
