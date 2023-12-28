@@ -11,10 +11,23 @@ const { generateTokens } = require("../../helper/tokenGenerate");
 
 const createDistributor = async (req, res) => {
     try {
-        const { deviceName, deviceId, fullName, email, mobileNumber, profile, userRole, companyName, businessCategory } = req.body;
-        const { } = profile;
+        const { fullName, email, companyName, mobileNumber, businessCategory, deviceName, deviceId } = req.body;
 
-        const userData = await distributorModel.findOneAndUpdate({ mobileNumber: mobileNumber }, req.body);
+        const findEmail = await distributorModel.findOne({ email: email })
+
+        if (findEmail) {
+            return res
+                .status(400)
+                .send({ success: false, emailExist: true, message: "Email ID already exist" });
+        }
+        let profile = {
+            address: '',
+            aadhar: '',
+            panNumber: '',
+            DOB: ''
+        }
+
+        const userData = await distributorModel.findOneAndUpdate({ mobileNumber: mobileNumber }, { fullName, email, companyName, profile: profile });
 
         const newStore = await distributorStoreModel.create({ distrubutorId: userData._id, store_name: companyName, businessCategory: businessCategory });
         const addStoreId = await distributorModel.findByIdAndUpdate(userData._id, { $push: { stores: newStore._id } });
