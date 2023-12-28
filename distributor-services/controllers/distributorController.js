@@ -17,7 +17,7 @@ const createDistributor = async (req, res) => {
 
         if (findEmail) {
             return res
-                .status(400)
+                .status(200)
                 .send({ success: false, emailExist: true, message: "Email ID already exist" });
         }
         let profile = {
