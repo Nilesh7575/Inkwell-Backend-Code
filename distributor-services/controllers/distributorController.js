@@ -20,6 +20,7 @@ const createDistributor = async (req, res) => {
                 .status(200)
                 .send({ success: false, emailExist: true, message: "Email ID already exist" });
         }
+
         let profile = {
             address: '',
             aadhar: '',
@@ -29,7 +30,17 @@ const createDistributor = async (req, res) => {
 
         const userData = await distributorModel.findOneAndUpdate({ mobileNumber: mobileNumber }, { fullName, email, companyName, profile: profile });
 
-        const newStore = await distributorStoreModel.create({ distrubutorId: userData._id, store_name: companyName, businessCategory: businessCategory });
+        let storeData = {
+            distrubutorId: userData._id,
+            store_name: companyName,
+        }
+
+        if (businessCategory) {
+            storeData.businessCategory = businessCategory;
+        }
+
+        const newStore = await distributorStoreModel.create(storeData);
+
         const addStoreId = await distributorModel.findByIdAndUpdate(userData._id, { $push: { stores: newStore._id } });
 
         const { accessToken, refreshToken, expiresIn } = generateTokens(userData._id, deviceName, deviceId);
@@ -288,7 +299,7 @@ async function getAllDistributor(req, res) {
 async function getDistributorById(req, res) {
     const { id } = req.params;
     try {
-        const user = await distributorModel.findById(id);
+        const user = await distributorModel.findById(id).populate('stores');
         if (!user) {
             return res.status(404).json({ error: "User not found." });
         }
