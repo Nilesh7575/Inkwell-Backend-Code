@@ -13,24 +13,23 @@ const {
   deletemembershipPlanById,
 } = require("../controllers/membershipPlanController");
 
-router.post("/create", authenticateTokenAndSession, createMembershipPlan);
+router.post("/createMembershipPlan", createMembershipPlan);
 
-router.get("/getAll", authenticateTokenAndSession, getAllMembershipPlan);
+router.get("/getAllMembershipPlan", getAllMembershipPlan);
 
 router.get(
-  "/getAllByDistributorId/:id",
-  authenticateTokenAndSession,
+  "/getAllMembershipPlanByDistributorId",
   getAllMembershipPlanByDistributorId
 );
 
 router.put(
-  "/update/:id",
+  "/updateMembershipPlan",
   authenticateTokenAndSession,
   updateMembershipPlanById
 );
 
 router.delete(
-  "/delete/:id",
+  "/deleteMembershipPlan/:id",
   authenticateTokenAndSession,
   deletemembershipPlanById
 );

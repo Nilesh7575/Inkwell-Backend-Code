@@ -40,6 +40,10 @@ const membershipPlanSchema = mongoose.Schema({
     },
     discountValue :{
         type: Number,
+    },
+    isActivePlan :{
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true,
