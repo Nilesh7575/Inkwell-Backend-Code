@@ -15,13 +15,11 @@ const createSession = async (userId) => {
 };
 
 // Remove a session when a user logs out or the token expires
-const removeExistingSession = async (userData) => {
+const removeExistingSession = async (userId, mobileNumber) => {
     try {
-        const result = await sessionModel.deleteOne({
-            userId: userData._id,
-        });
+        const result = await sessionModel.deleteMany({ userId: userId });
     } catch (error) {
-        console.error(`Error removing session for user with _id ${userData._id}: ${error.message}`);
+        console.error(`Error removing session for user with _id ${userId}: ${error.message}`);
         throw error;
     }
 };

@@ -6,23 +6,26 @@ const sessionSchema = new mongoose.Schema({
         required: true,
         ref: 'User',
     },
-    tokenIssueAt: {
+    otp: {
         type: String,
-        required: true,
     },
-
+    otpAttempts: {
+        type: Number
+    },
+    deviceId: {
+        type: String,
+        unique: true,
+    },
+    deviceName: {
+        type: String,
+    },
+    refreshToken: {
+        type: String,
+    },
+    refreshTokenValidUntil: {
+        type: Date,
+    },
 }, { timestamps: true });
-
-// Function to check if a session has expired
-sessionSchema.methods.hasExpired = function () {
-    // Define your session expiration time (e.g., 1 hour)
-    const sessionExpirationTimeInMs = 60 * 5 * 1000;
-
-    const currentTime = new Date();
-    const sessionStartTime = new Date(this.createdAt);
-
-    return currentTime - sessionStartTime > sessionExpirationTimeInMs;
-};
 
 // Create and export the Session model
 module.exports = mongoose.model('Session', sessionSchema);

@@ -1,12 +1,13 @@
 const jwt = require('jsonwebtoken');
 const sessionModel = require('../session-services/models/sessionModel');
 const deviceModel = require('../session-services/models/deviceModel');
+const { generateTokens } = require('../helper/tokenGenerate');
 
 const secretKey = process.env.JWT_SECRET_KEY
 
-
 const authenticateTokenAndSession = async (req, res, next) => {
     const authHeader = req.header('Authorization');
+    const refreshToken = req.header('RefreshToken');
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({
@@ -18,67 +19,66 @@ const authenticateTokenAndSession = async (req, res, next) => {
     const token = authHeader.substring('Bearer '.length);
 
     try {
-        // Verify the token (you may use your existing token verification logic)
-        jwt.verify(token, secretKey, async (err, decoded) => {
-            if (err) {
-                return res.status(403).json({
-                    success: false,
-                    message: 'Forbidden: Invalid token',
-                });
-            }
-            const session = await deviceModel.findOne({ deviceId: decoded.deviceId, isDeleted: false }).exec();
+        // Verify the access token
+        const decoded = jwt.verify(token, secretKey);
 
-            if (decoded.exp && Date.now() >= decoded.exp * 1000) {
+        const session = await sessionModel.findOne({
+            userId: decoded.userId,
+            deviceId: decoded.deviceId,
+            deviceName: decoded.deviceName
+        }).exec();
+
+        if (!session) {
+            return res.status(401).json({
+                success: false,
+                message: 'Unauthorized: Invalid Access token, token cred mismatch or already login with another device',
+            });
+        }
+
+        // Check expiration of the access token
+        if (decoded.exp && Date.now() >= decoded.exp * 1000) {
+            // Verify the refresh token
+            const refTokenDecoded = jwt.verify(refreshToken, secretKey);
+
+            // Check expiration of the refresh token
+            if (refTokenDecoded.exp && Date.now() >= refTokenDecoded.exp * 1000) {
                 return res.status(401).json({
                     success: false,
-                    message: 'Unauthorized: Token has expired',
+                    message: 'Unauthorized: Refresh Token has expired',
                 });
             }
-            if (!session) {
+
+            // Verify the refresh token's session
+            const refreshSession = await sessionModel.findOne({
+                userId: refTokenDecoded.userId,
+                deviceId: refTokenDecoded.deviceId,
+                deviceName: refTokenDecoded.deviceName
+            }).exec();
+
+            if (!refreshSession) {
                 return res.status(401).json({
                     success: false,
-                    message: 'Unauthorized: Invalid token or session expired, you already login in the another Device',
+                    message: 'Unauthorized: Invalid Refresh token, token cred mismatch',
                 });
             }
+
+            // Generate new tokens and set headers
+            const { accessToken, refreshToken, expiresIn } = generateTokens(decoded.userId, decoded.deviceName, decoded.deviceId);
+            res.header('Authorization', accessToken);
+            res.header('RefreshToken', refreshToken);
+
             req.userId = decoded.userId;
             next();
-        });
+        } else {
+            req.userId = decoded.userId;
+            next();
+        }
     } catch (error) {
-        return res.status(500).json({
+        return res.status(403).json({
             success: false,
-            message: 'Internal Server Error',
+            message: 'Forbidden: Invalid token',
         });
-    }
-
-};
-
-const refreshAccessToken = async (req, res) => {
-    try {
-        const { refreshToken } = req.body;
-
-        // Verify the refresh token
-        jwt.verify(refreshToken, process.env.JWT_SECRET_KEY, async (err, decoded) => {
-            if (err) {
-                return res.status(401).json({ success: false, message: 'Invalid refresh token' });
-            }
-
-            const userData = await distributorModel.findById(decoded.userId);
-
-            // Generate a new access token
-            const newAccessToken = generateToken(userData._id, decoded.deviceName, decoded.deviceId, false);
-
-            // Send the new access token in the response
-            return res.status(200).json({
-                success: true,
-                accessToken: newAccessToken,
-                expiresIn: 8 * 60 * 60, // 8 hours
-                message: 'Access token refreshed successfully',
-            });
-        });
-    } catch (err) {
-        console.log(err.message);
-        return res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };
 
-module.exports = { authenticateTokenAndSession,refreshAccessToken };
+module.exports = { authenticateTokenAndSession };

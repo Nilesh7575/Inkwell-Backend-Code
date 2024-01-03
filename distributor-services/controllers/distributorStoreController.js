@@ -1,9 +1,10 @@
-const Distributorstore = require("../models/distributorStoreModel");
+const distributorModel = require("../models/distributorModel");
+const distributorStoreModel = require("../models/distributorStoreModel");
 
 // Controller for getting all stores
 const getAllStores = async (req, res) => {
     try {
-        const stores = await Distributorstore.find();
+        const stores = await distributorStoreModel.find();
         res.json(stores);
     } catch (error) {
         res.status(500).json({ message: "Error fetching stores", error });
@@ -14,7 +15,7 @@ const getAllStores = async (req, res) => {
 const getStoreById = async (req, res) => {
     const { id } = req.params;
     try {
-        const store = await Distributorstore.findById(id);
+        const store = await distributorStoreModel.findById(id);
         if (!store) {
             return res.status(404).json({ message: "Store not found" });
         }
@@ -28,31 +29,68 @@ const getStoreById = async (req, res) => {
 const createStore = async (req, res) => {
     const storeData = req.body;
     try {
-        const newStore = await Distributorstore.create(storeData);
+        const newStore = await distributorStoreModel.create(storeData);
+        const addStoreId = await distributorModel.findByIdAndUpdate(storeData.distrubutorId, { $push: { stores: newStore._id } });
+
         res.status(201).json(newStore);
     } catch (error) {
-        res.status(400).json({ message: "Error creating store", error });
+        res.status(200).json({ message: "Error creating store", error });
     }
 };
 
 // Controller for updating a store by ID
 const updateStore = async (req, res) => {
-    const { id } = req.params;
-    const updatedStoreData = req.body;
     try {
-        const updatedStore = await Distributorstore.findByIdAndUpdate(
-            id,
-            updatedStoreData,
-            {
-                new: true,
-            }
-        );
-        if (!updatedStore) {
-            return res.status(404).json({ message: "Store not found" });
+        const { id } = req.params;
+        const { businessCategory, store_name, address, phone_number, email, gst_number, pan, vat_number, business_license_number, business_registration_number, tax_exempt_status } = req.body;
+
+        let storeUpdateData = {}
+
+        if (businessCategory) {
+            storeUpdateData.businessCategory = businessCategory
         }
-        res.json(updatedStore);
+
+        if (store_name) {
+            storeUpdateData.store_name = store_name
+        }
+        if (address) {
+            storeUpdateData.address = address
+        }
+        if (phone_number) {
+            storeUpdateData.phone_number = phone_number
+        }
+        if (email) {
+            storeUpdateData.email = email
+        }
+        if (gst_number) {
+            storeUpdateData.gst_number = gst_number
+        }
+        if (pan) {
+            storeUpdateData.pan = pan
+        }
+        if (vat_number) {
+            storeUpdateData.vat_number = vat_number
+        }
+        if (business_license_number) {
+            storeUpdateData.business_license_number = business_license_number
+        }
+        if (business_registration_number) {
+            storeUpdateData.business_registration_number = business_registration_number
+        }
+        if (tax_exempt_status) {
+            storeUpdateData.tax_exempt_status = tax_exempt_status
+        }
+
+        const updatedStore = await distributorStoreModel.findByIdAndUpdate(id, storeUpdateData, { new: true, });
+
+        if (!updatedStore) {
+            return res.status(200).json({ message: "Store not found" });
+        }
+
+        res.status(200).json(updatedStore);
+
     } catch (error) {
-        res.status(400).json({ message: "Error updating store", error });
+        res.status(200).json({ message: "Error updating store", error });
     }
 };
 
@@ -60,7 +98,7 @@ const updateStore = async (req, res) => {
 const deleteStore = async (req, res) => {
     const { id } = req.params;
     try {
-        const deletedStore = await Distributorstore.findByIdAndRemove(id);
+        const deletedStore = await distributorStoreModel.findByIdAndRemove(id);
         if (!deletedStore) {
             return res.status(404).json({ message: "Store not found" });
         }
